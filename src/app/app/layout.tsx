@@ -1,0 +1,65 @@
+"use client";
+
+import { SidebarProvider } from "@/hooks/use-sidebar";
+import { Sidebar } from "@/components/layout/sidebar";
+import { TopNav } from "@/components/layout/top-nav";
+import { MobileNav } from "@/components/layout/mobile-nav";
+import { AnimatedBackground } from "@/components/animations/animated-background";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-media-query";
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useBrowserNotifications } from "@/hooks/use-notifications";
+
+function AppContent({ children }: { children: React.ReactNode }) {
+  const isMobile = useIsMobile();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  // must be called before early returns — Rules of Hooks
+  useBrowserNotifications();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/auth/login");
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <AnimatedBackground variant="dashboard" />
+      {!isMobile && <Sidebar />}
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
+        {!isMobile && <TopNav />}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 lg:p-6 max-w-7xl mx-auto">{children}</div>
+        </main>
+      </div>
+      {isMobile && <MobileNav />}
+    </div>
+  );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient());
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SidebarProvider>
+        <AppContent>{children}</AppContent>
+      </SidebarProvider>
+    </QueryClientProvider>
+  );
+}

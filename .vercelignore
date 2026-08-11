@@ -1,0 +1,17 @@
+# .vercelignore
+# Files/dirs that don't belong in a Vercel production deployment.
+
+node_modules
+.next
+tests
+coverage
+supabase
+src/**/*.test.ts
+
+# Env files — Vercel supplies these via Project Settings.
+.env.local
+.env.example
+
+# Git metadata not needed at runtime.
+.git
+.github
