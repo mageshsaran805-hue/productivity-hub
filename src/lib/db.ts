@@ -15,6 +15,7 @@ export {
   habitUpdateSchema,
   habitLogSchema,
   settingsSchema,
+  calendarEventCreateSchema,
   workspaceCreateSchema,
   sendEmailSchema,
   requireUuid,

@@ -229,6 +229,23 @@ export function useCalendarEvents(startDate: string, endDate: string) {
   });
 }
 
+export function useCreateCalendarEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (event: {
+      title: string;
+      description?: string | null;
+      start_date: string;
+      end_date: string;
+      is_all_day?: boolean;
+      color?: string;
+    }) => post<CalendarEvent>("/api/calendar-events", event),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["calendar_events"] });
+    },
+  });
+}
+
 export function useTasksDueInRange(startDate: string, endDate: string) {
   return useQuery({
     queryKey: ["tasks_due", startDate, endDate],

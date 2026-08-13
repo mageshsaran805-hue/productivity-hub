@@ -75,6 +75,15 @@ export const settingsSchema = z.object({
   week_starts_on: z.number().int().min(0).max(6).optional(),
 });
 
+export const calendarEventCreateSchema = z.object({
+  title: z.string().trim().min(1).max(300),
+  description: z.string().max(5000).optional().nullable(),
+  start_date: z.string(),
+  end_date: z.string(),
+  is_all_day: z.boolean().optional(),
+  color: z.string().max(50).optional(),
+});
+
 export const workspaceCreateSchema = z.object({
   name: z.string().trim().min(1).max(300),
   description: z.string().max(2000).optional().nullable(),
