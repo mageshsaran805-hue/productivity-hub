@@ -1,122 +1,491 @@
-# Productivity Hub
+# 🚀 Productivity Hub
 
-A full-stack personal productivity suite — tasks, habits, projects, calendar, and analytics — built with Next.js, TypeScript, and PostgreSQL on Supabase.
+> **One workspace for your tasks, habits, projects, calendar, and productivity analytics.**
 
-## Features
+Productivity Hub is a modern full-stack personal productivity platform designed to help you **plan, organize, track, and improve your daily workflow** from a single dashboard.
 
-- **Tasks** — list and kanban board views, priorities (urgent/high/medium/low), due dates, recurring tasks, favorites, drag-and-drop ordering, full-text search
-- **Projects** — organize tasks into projects with status (active/completed/archived), computed progress, and colors
-- **Habits** — daily/weekly/monthly/custom frequency, streak tracking, categories, per-day logs with optional values (minutes, counts) and notes
-- **Today & Upcoming** — due-date-first views of everything scheduled
-- **Inbox** — quick capture of tasks without context, promoted into a workspace later
-- **Calendar** — unified view of tasks, habits, and events
-- **Analytics** — completion trends, habit streaks, and productivity stats
-- **Notifications** — in-app, browser push, and email reminders (optional Resend)
-- **Auth** — email/password signup, login, forgot/reset password via [Better Auth](https://better-auth.com), session-gated API with cross-user ownership checks
-- **Settings** — per-user notification toggles
+Built with **Next.js, TypeScript, PostgreSQL, Supabase, and Better Auth**, it combines task management, habit tracking, project organization, calendar scheduling, notifications, and productivity analytics into one application.
 
-## Tech Stack
+---
 
-| Layer    | Technology |
-| -------- | ---------- |
-| Framework | [Next.js 16](https://nextjs.org) (App Router) + React 19 |
-| Language | TypeScript (strict) |
-| Styling | Tailwind CSS v4, Radix UI primitives, framer-motion |
-| Data | PostgreSQL via direct `pg` pool, Zod validation |
-| Database | [Supabase](https://supabase.com) (schema, RLS in `supabase/`) |
-| Auth | Better Auth (email/password) |
-| Notifications | Browser Push + Resend email |
-| Testing | Vitest (unit + HTTP integration) |
+## ✨ Features
 
-## Project Structure
+### ✅ Task Management
 
+* Create, edit, complete, and delete tasks
+* List and Kanban board views
+* Priority levels: Urgent, High, Medium, Low
+* Due dates and recurring tasks
+* Favorites
+* Drag-and-drop ordering
+* Full-text task search
+* Subtasks and tags
+* Inbox for quick task capture
+
+### 📁 Project Management
+
+* Organize tasks into projects
+* Active, completed, and archived projects
+* Automatic project progress calculation
+* Custom project colors
+* Project-based task organization
+
+### 🔥 Habit Tracking
+
+* Daily, weekly, monthly, and custom schedules
+* Habit streak tracking
+* Habit categories
+* Daily habit logs
+* Optional values such as:
+
+  * Minutes
+  * Counts
+  * Notes
+
+### 📅 Calendar
+
+Unified calendar containing:
+
+* Tasks
+* Habits
+* Calendar events
+* Upcoming deadlines
+
+### 📊 Analytics
+
+Track your productivity through:
+
+* Task completion trends
+* Habit streaks
+* Productivity statistics
+* Activity history
+
+### 🔔 Notifications
+
+Supports:
+
+* In-app notifications
+* Browser push notifications
+* Optional email notifications using Resend
+* Configurable notification preferences
+
+### 🔐 Authentication & Security
+
+* Email/password authentication
+* Signup and login
+* Forgot/reset password
+* Session-based authentication
+* Protected application routes
+* Cross-user ownership checks
+* PostgreSQL Row Level Security
+* Rate limiting
+* Secure API endpoints
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer             | Technology            |
+| ----------------- | --------------------- |
+| Framework         | Next.js 16            |
+| Frontend          | React 19              |
+| Language          | TypeScript            |
+| Styling           | Tailwind CSS v4       |
+| UI                | Radix UI              |
+| Animations        | Framer Motion         |
+| Database          | PostgreSQL            |
+| Database Platform | Supabase              |
+| Authentication    | Better Auth           |
+| Validation        | Zod                   |
+| Notifications     | Browser Push + Resend |
+| Testing           | Vitest                |
+| Deployment        | Vercel                |
+| CI/CD             | GitHub Actions        |
+
+---
+
+## 🏗️ Architecture
+
+```text
+┌─────────────────────────────────────┐
+│          Productivity Hub           │
+├─────────────────────────────────────┤
+│                                     │
+│          Next.js App Router         │
+│                                     │
+│  ┌──────────┐     ┌─────────────┐  │
+│  │   UI     │────▶│ API Routes  │  │
+│  │ React 19 │     │ REST APIs   │  │
+│  └──────────┘     └──────┬──────┘  │
+│                          │         │
+│                          ▼         │
+│                   ┌─────────────┐  │
+│                   │ Better Auth │  │
+│                   └──────┬──────┘  │
+│                          │         │
+│                          ▼         │
+│                   ┌─────────────┐  │
+│                   │ PostgreSQL  │  │
+│                   │  Supabase   │  │
+│                   └─────────────┘  │
+│                                     │
+└─────────────────────────────────────┘
 ```
-src/
-├── app/            # App Router routes (landing, /app/*, /auth/*, /api/*)
-│   ├── api/        # Route handlers — session-gated REST endpoints
-│   ├── app/        # Authenticated app UI (dashboard, tasks, habits, …)
-│   └── auth/       # Login, signup, forgot/reset password
-├── components/     # UI primitives, layouts, landing, animations
-├── hooks/          # Auth, workspace, sidebar, notifications
-├── lib/            # DB pool, auth config, queries, validation, rate limiting
-└── proxy.ts        # Edge middleware — protects /app/*, redirects auth pages
-supabase/           # PostgreSQL schema, RLS policies, seed data
-tests/              # Unit + integration suites
+
+---
+
+## 📂 Project Structure
+
+```text
+productivity-hub/
+│
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       └── cd.yml
+│
+├── public/
+│
+├── scripts/
+│
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── app/
+│   │   └── auth/
+│   │
+│   ├── components/
+│   │
+│   ├── hooks/
+│   │
+│   ├── lib/
+│   │
+│   └── proxy.ts
+│
+├── supabase/
+│   ├── schema.sql
+│   ├── rls.sql
+│   ├── seed.sql
+│   └── better-auth-migration.sql
+│
+├── tests/
+│   ├── unit/
+│   └── integration/
+│
+├── .env.example
+├── next.config.ts
+├── package.json
+├── tailwind.config.ts
+├── tsconfig.json
+└── vitest.config.ts
 ```
 
-## Getting Started
+---
 
-Prerequisites: Node.js ≥ 20, a PostgreSQL database (Supabase free tier works).
+## 🚀 Getting Started
 
-1. Install dependencies:
+### Prerequisites
 
-   ```bash
-   npm install
-   ```
+Make sure you have:
 
-2. Create your database. If using Supabase, run the scripts in `supabase/` in order:
-   `schema.sql`, `rls.sql`, `seed.sql`, plus `better-auth-migration.sql` for auth tables.
+* **Node.js 20+**
+* **npm**
+* **Supabase/PostgreSQL database**
 
-3. Configure environment variables:
+### 1. Clone the repository
 
-   ```bash
-   cp .env.example .env.local
-   ```
+```bash
+git clone https://github.com/mageshsaran805-hue/productivity-hub.git
+cd productivity-hub
+```
 
-   ```env
-   DATABASE_URL=postgresql://postgres.<ref>:<password>@<host>:5432/postgres
-   BETTER_AUTH_SECRET=<generate with: openssl rand -base64 32>
-   BETTER_AUTH_URL=http://localhost:3000
-   RESEND_API_KEY=            # optional — needed for password-reset emails
-   ```
+### 2. Install dependencies
 
-4. Run the dev server:
+```bash
+npm install
+```
 
-   ```bash
-   npm run dev
-   ```
+### 3. Configure Supabase
 
-   Open http://localhost:3000.
+Create a Supabase project and run the SQL files from the `supabase/` directory in this order:
 
-## Scripts
+```text
+schema.sql
+rls.sql
+seed.sql
+better-auth-migration.sql
+```
 
-| Command            | Description                                    |
-| ------------------ | ---------------------------------------------- |
-| `npm run dev`      | Start the dev server                           |
-| `npm run build`    | Production build (`next build`)                |
-| `npm start`        | Start the production server                    |
-| `npm run lint`     | ESLint (Next core-web-vitals + TypeScript)     |
-| `npm test`         | Run Vitest unit + integration suites           |
-| `test:watch`       | Run tests in watch mode                        |
+### 4. Configure environment variables
 
-The integration suite (`tests/integration/api.test.ts`) targets a running server and auto-skips if none is reachable. Start `npm run dev` in one terminal, then `npm test` in another.
+Create your local environment file:
 
-## Deployment
+```bash
+cp .env.example .env.local
+```
 
-### Vercel (recommended)
+Configure:
 
-1. Import the repository at [vercel.com/new](https://vercel.com/new).
-2. Add these environment variables in Project Settings → Environment Variables:
-   - `DATABASE_URL` — use the Supabase **transaction pooler** (`:6543`) for the serverless connection
-   - `BETTER_AUTH_SECRET`
-   - `BETTER_AUTH_URL` — your production origin, e.g. `https://your-app.vercel.app`
-   - `RESEND_API_KEY` (optional)
-3. Deploy. CD on `main` is handled by `.github/workflows/cd.yml` once a `VERCEL_TOKEN` is added to repo Actions secrets.
+```env
+DATABASE_URL=your_postgresql_connection_string
 
-### CI/CD
+BETTER_AUTH_SECRET=your_secret_key
 
-- **CI** (`.github/workflows/ci.yml`) — runs on push/PR to `main`: typecheck, lint, test, build
-- **CD** (`.github/workflows/cd.yml`) — runs on push to `main`: builds and deploys to Vercel production
+BETTER_AUTH_URL=http://localhost:3000
 
-## Testing
+RESEND_API_KEY=your_resend_api_key
+```
 
-- **Unit** — validation schemas, error mapping, rate limiting (`tests/unit/`)
-- **Integration** — end-to-end HTTP tests against the running app: auth gate, task/habit/project CRUD, cross-user isolation, read-only endpoints (`tests/integration/`)
+Generate a secure Better Auth secret with:
 
-## Database
+```bash
+openssl rand -base64 32
+```
 
-16 tables covering workspaces, projects, tasks (with subtasks, tags, and full-text search), habits + logs, calendar events, notifications, activity logs, and user settings. Soft deletes via `deleted_at`, `updated_at` maintained by trigger, and Row Level Security in `supabase/rls.sql`.
+> `RESEND_API_KEY` is optional unless you want email-based password reset functionality.
 
-## License
+### 5. Start the development server
 
-Private project.
+```bash
+npm run dev
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+---
+
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+npm test
+```
+
+Run linting:
+
+```bash
+npm run lint
+```
+
+Build the application:
+
+```bash
+npm run build
+```
+
+Start the production server:
+
+```bash
+npm start
+```
+
+### Available Scripts
+
+| Command         | Description              |
+| --------------- | ------------------------ |
+| `npm run dev`   | Start development server |
+| `npm run build` | Create production build  |
+| `npm start`     | Start production server  |
+| `npm run lint`  | Run ESLint               |
+| `npm test`      | Run Vitest tests         |
+
+---
+
+## 🔒 Security
+
+Productivity Hub is designed with security in mind.
+
+Security mechanisms include:
+
+* Protected authenticated routes
+* Session-based API authorization
+* Cross-user data isolation
+* PostgreSQL Row Level Security
+* Zod request validation
+* Rate limiting
+* Secure authentication flows
+* Soft deletion
+* Database-level ownership policies
+
+The database currently contains **16 tables** covering workspaces, projects, tasks, subtasks, tags, habits, habit logs, calendar events, notifications, activity logs, and user settings.
+
+---
+
+## ☁️ Deployment
+
+The recommended deployment setup is:
+
+```text
+GitHub
+   │
+   ▼
+Vercel
+   │
+   ▼
+Next.js Application
+   │
+   ▼
+Supabase PostgreSQL
+```
+
+### Deploy with Vercel
+
+1. Import the GitHub repository into Vercel.
+2. Configure the required environment variables.
+3. Set `BETTER_AUTH_URL` to your production domain.
+4. Deploy.
+
+The project also includes GitHub Actions workflows for CI/CD. CI can run type checking, linting, tests, and builds, while CD can deploy the application to Vercel.
+
+---
+
+## 🗄️ Database
+
+The application uses **PostgreSQL through Supabase**.
+
+Major data areas include:
+
+```text
+Users
+ │
+ └── Workspaces
+      │
+      ├── Projects
+      │    └── Tasks
+      │         ├── Subtasks
+      │         └── Tags
+      │
+      ├── Habits
+      │    └── Habit Logs
+      │
+      ├── Calendar Events
+      │
+      ├── Notifications
+      │
+      ├── Activity Logs
+      │
+      └── User Settings
+```
+
+Row Level Security policies ensure users can only access data they are authorized to access.
+
+---
+
+## 🧩 Core Modules
+
+```text
+Dashboard
+│
+├── Today
+├── Upcoming
+├── Inbox
+├── Tasks
+│   ├── List
+│   └── Kanban
+├── Projects
+├── Habits
+├── Calendar
+├── Analytics
+├── Notifications
+└── Settings
+```
+
+---
+
+## 🎯 Goals
+
+Productivity Hub aims to provide a single place where users can:
+
+* 📋 Manage everything they need to do
+* 🎯 Organize larger projects
+* 🔥 Build consistent habits
+* 📅 Plan their schedule
+* 📊 Understand their productivity
+* 🔔 Stay on top of important tasks
+* 🔐 Keep personal data secure
+
+---
+
+## 🛣️ Roadmap
+
+Potential future improvements:
+
+* [ ] Mobile/PWA experience
+* [ ] Advanced analytics dashboards
+* [ ] Team workspaces
+* [ ] Calendar integrations
+* [ ] Google Calendar integration
+* [ ] Task dependencies
+* [ ] AI-powered task planning
+* [ ] AI productivity insights
+* [ ] Advanced recurring-task rules
+* [ ] More notification channels
+* [ ] Offline-first support
+
+---
+
+## 🤝 Contributing
+
+This project is currently maintained as a personal project.
+
+If the repository becomes open for contributions:
+
+1. Fork the repository
+2. Create a feature branch
+
+```bash
+git checkout -b feature/your-feature
+```
+
+3. Make your changes
+4. Run tests
+
+```bash
+npm test
+npm run lint
+npm run build
+```
+
+5. Commit your changes
+
+```bash
+git commit -m "feat: add your feature"
+```
+
+6. Push the branch
+
+```bash
+git push origin feature/your-feature
+```
+
+7. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is currently a **private project** and is not released under an open-source license.
+
+---
+
+## 👨‍💻 Author
+
+**Magesh Saran**
+
+Computer Science & Engineering Student
+Interested in **Cybersecurity, Web Development, AI, and Software Engineering**.
+
+### Repository
+
+[Productivity Hub on GitHub](https://github.com/mageshsaran805-hue/productivity-hub?utm_source=chatgpt.com)
+
+---
+
+<p align="center">
+  Built with ❤️ using Next.js, TypeScript, PostgreSQL & Supabase.
+</p>
