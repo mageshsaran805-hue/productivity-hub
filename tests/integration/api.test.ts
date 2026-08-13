@@ -48,7 +48,7 @@ async function signup(prefix: string): Promise<{ cookie: string; email: string }
 
 interface ApiResult {
   status: number;
-  data: any;
+  data: Record<string, unknown>;
 }
 
 async function api(
@@ -68,9 +68,9 @@ async function api(
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
   });
   const text = await res.text();
-  let data: any = null;
+  let data: Record<string, unknown> = {};
   try {
-    data = JSON.parse(text);
+    data = JSON.parse(text) as Record<string, unknown>;
   } catch {
     // non-JSON (shouldn't happen for API routes)
   }
@@ -152,7 +152,7 @@ describe.runIf(serverUp)("API integration (session-gated)", () => {
       const ws = await api("/api/workspaces", { cookie: userA.cookie });
       expect(ws.status).toBe(200);
       expect(ws.data.length).toBeGreaterThanOrEqual(1);
-      workspaceA = ws.data[0].id;
+      workspaceA = (ws.data as unknown as { id: string }[])[0].id;
     });
   });
 
@@ -204,13 +204,13 @@ describe.runIf(serverUp)("API integration (session-gated)", () => {
       });
       expect(res.status).toBe(201);
       expect(res.data.title).toBe("Integration task");
-      taskId = res.data.id;
+      taskId = res.data.id as string;
     });
 
     it("lists it for the owner", async () => {
       const res = await api("/api/tasks", { cookie: userA.cookie });
       expect(res.status).toBe(200);
-      expect(res.data.some((t: any) => t.id === taskId)).toBe(true);
+      expect(Array.isArray(res.data) && res.data.some((t) => (t as { id?: string }).id === taskId)).toBe(true);
     });
 
     it("hides it from other users (404 on direct fetch)", async () => {
@@ -248,7 +248,7 @@ describe.runIf(serverUp)("API integration (session-gated)", () => {
         cookie: userA.cookie,
       });
       expect(res.status).toBe(201);
-      habitId = res.data.id;
+      habitId = res.data.id as string;
     });
 
     it("rejects a foreign habit log for another user's habit", async () => {

@@ -4,7 +4,7 @@ import { Pool } from "pg";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-let _resend: any;
+let _resend: import("resend").Resend | null = null;
 async function getResend() {
   if (!_resend) {
     const { Resend } = await import("resend");

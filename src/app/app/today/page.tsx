@@ -27,7 +27,7 @@ export default function TodayPage() {
 
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
-  const [newTaskPriority, setNewTaskPriority] = useState("medium");
+  const [newTaskPriority, setNewTaskPriority] = useState<"urgent" | "high" | "medium" | "low" | "none">("medium");
 
   const today = new Date().toISOString().split("T")[0];
   const todayTasks = tasks?.filter((t) => {
@@ -46,7 +46,7 @@ export default function TodayPage() {
         title: newTaskTitle.trim(),
         workspace_id: workspace.id,
         status: "todo",
-        priority: newTaskPriority as any,
+        priority: newTaskPriority,
         due_date: today,
       });
       toast.success("Task created!");
@@ -195,7 +195,7 @@ export default function TodayPage() {
                 { value: "urgent", label: "Urgent" },
               ]}
               value={newTaskPriority}
-              onChange={setNewTaskPriority}
+              onChange={(v) => setNewTaskPriority(v as "urgent" | "high" | "medium" | "low" | "none")}
             />
             <Button
               className="w-full"
