@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserSettings, useUpdateUserSettings } from "@/lib/queries";
 import { authClient } from "@/lib/auth-client";
-import { Bell, User, Palette, ChevronRight, Moon, Loader2 } from "lucide-react";
+import { Bell, User, Palette, ChevronRight, Moon } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const { data: settings, isLoading } = useUserSettings();
+  const { data: settings } = useUserSettings();
   const updateSettings = useUpdateUserSettings();
   const [activeSection, setActiveSection] = useState("notifications");
   const [notifState, setNotifState] = useState({ email: true, push: true, reminders: false });

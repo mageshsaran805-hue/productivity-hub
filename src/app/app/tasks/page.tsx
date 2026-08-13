@@ -34,7 +34,6 @@ import {
   ArrowUp,
   Minus,
   ArrowDown,
-  Loader2,
   Search,
 } from "lucide-react";
 
@@ -147,9 +146,6 @@ export default function TasksPage() {
   const activeTasks = (isSearching ? searchResults ?? [] : tasks ?? []).filter((t) => t.status !== "archived");
   const resolvedIsLoading = isSearching ? searchLoading : isLoading;
   const resolvedError = isSearching ? searchError : error;
-  const todoCount = activeTasks.filter((t) => t.status === "todo" || t.status === "backlog").length;
-  const inProgressCount = activeTasks.filter((t) => t.status === "in_progress").length;
-  const completedCount = activeTasks.filter((t) => t.status === "completed").length;
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

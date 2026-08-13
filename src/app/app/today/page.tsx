@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { useDefaultWorkspace } from "@/hooks/use-workspace";
 import { useTasks, useCreateTask, useCompleteTask, useHabits, useLogHabit } from "@/lib/queries";
-import { CheckSquare, Target, Plus, Loader2 } from "lucide-react";
+import { CheckSquare, Target, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import toast from "react-hot-toast";

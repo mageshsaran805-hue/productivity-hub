@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckSquare, FolderKanban, Calendar, Target, BarChart3, Bell, Search, Zap, Shield, Users, Layers, Palette } from "lucide-react";
+import { CheckSquare, FolderKanban, Calendar, Target, BarChart3, Bell, Search, Zap, Shield } from "lucide-react";
 import { StaggerChildren, StaggerItem } from "@/components/animations/stagger-children";
 
 const features = [

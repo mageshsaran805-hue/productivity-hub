@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useAuth } from "@/hooks/use-auth";
 import { useUncategorizedTasks, useCompleteTask, useDeleteTask } from "@/lib/queries";
-import { Inbox, Trash2, CheckSquare, Loader2, Plus } from "lucide-react";
+import { Inbox, Trash2, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";

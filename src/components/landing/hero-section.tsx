@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Sparkles, CheckCircle2, Target, Calendar, GitFork } from "lucide-react";
+import { Play, Sparkles, CheckCircle2, Target, Calendar, GitFork } from "lucide-react";
 import Link from "next/link";
 
 export function HeroSection() {

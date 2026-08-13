@@ -10,7 +10,6 @@ interface GlassPanelProps {
   intensity?: "light" | "medium" | "heavy";
   border?: boolean;
   glow?: boolean;
-  as?: "div" | "section" | "aside";
 }
 
 export function GlassPanel({
@@ -19,7 +18,6 @@ export function GlassPanel({
   intensity = "medium",
   border = true,
   glow = false,
-  as: Component = "div",
 }: GlassPanelProps) {
   const intensityStyles = {
     light: "bg-white/40 dark:bg-white/[0.02] backdrop-blur-md",
