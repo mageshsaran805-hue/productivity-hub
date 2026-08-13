@@ -39,7 +39,7 @@ export function Sidebar() {
     <motion.aside
       animate={{ width: isCollapsed ? 72 : 260 }}
       transition={{ type: "spring", stiffness: 200, damping: 25 }}
-      className="relative h-screen flex flex-col bg-white/60 dark:bg-gray-950/60 backdrop-blur-2xl border-r border-white/20 dark:border-white/10 z-30 overflow-hidden"
+      className="relative h-screen flex flex-col bg-white/60 dark:bg-gray-950/60 backdrop-blur-2xl border-r border-white/20 dark:border-white/10 z-30"
     >
       {/* Logo */}
       <div className={cn("flex items-center h-16 px-4 border-b border-border/50", isCollapsed && "justify-center")}>
