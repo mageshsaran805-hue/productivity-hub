@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 // Authenticated trigger: sends push notifications for the current user's tasks
 // that are due within the next 24h (or overdue). Used when the user visits the
 // app so they get immediate feedback even if the daily cron hasn't run yet.
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
