@@ -1,107 +1,37 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { GoogleButton } from "@/components/auth/google-button";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import Link from "next/link";
-import toast from "react-hot-toast";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { signIn } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    const { error } = await signIn(email, password);
-    setIsLoading(false);
-
-    if (error) {
-      toast.error(error);
-    } else {
-      toast.success("Welcome back!");
+  useEffect(() => {
+    if (!loading && user) {
       router.push("/app");
     }
-  };
+  }, [user, loading, router]);
+
+  if (loading) return null;
+  if (user) return null;
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Sign in to your account to continue">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <GoogleButton />
+    <AuthLayout title="Welcome back" subtitle="Sign in with your Google account to continue">
+      <div className="space-y-4">
+        <GoogleButton text="Continue with Google" />
 
-        <div className="flex items-center gap-3 py-1">
-          <div className="h-px flex-1 bg-border/50" />
-          <span className="text-xs text-foreground/40">or sign in with email</span>
-          <div className="h-px flex-1 bg-border/50" />
+        <div className="flex items-center gap-2 rounded-2xl bg-primary-500/5 border border-primary-500/20 px-4 py-3">
+          <Sparkles className="w-4 h-4 text-primary-500 shrink-0" />
+          <p className="text-xs text-foreground/60">
+            Only verified Google accounts can sign in.
+          </p>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Input
-            label="Email"
-            type="email"
-            placeholder="you@example.com"
-            icon={<Mail className="w-4 h-4" />}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          <Input
-            label="Password"
-            type="password"
-            placeholder="Enter your password"
-            icon={<Lock className="w-4 h-4" />}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center justify-between"
-        >
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" className="w-4 h-4 rounded border-foreground/20 text-primary-500 focus:ring-primary-500" />
-            <span className="text-sm text-foreground/60">Remember me</span>
-          </label>
-          <Link href="/auth/forgot-password" className="text-sm text-primary-500 hover:text-primary-400 transition-colors">
-            Forgot password?
-          </Link>
-        </motion.div>
-
-        <Button type="submit" loading={isLoading} className="w-full" size="lg" iconRight={<ArrowRight className="w-4 h-4" />}>
-          Sign In
-        </Button>
-
-        <p className="text-center text-sm text-foreground/50 mt-6">
-          Don&apos;t have an account?{" "}
-          <Link href="/auth/signup" className="text-primary-500 hover:text-primary-400 font-medium">
-            Sign up
-          </Link>
-        </p>
-      </form>
+      </div>
     </AuthLayout>
   );
 }
