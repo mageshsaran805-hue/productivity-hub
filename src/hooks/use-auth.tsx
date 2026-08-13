@@ -2,7 +2,6 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 import { useSession, signIn, signUp, signOut, authClient } from "@/lib/auth-client";
-
 interface AuthUser {
   id: string;
   email: string;
@@ -19,6 +18,7 @@ interface AuthState {
 interface AuthActions {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
 }
@@ -30,6 +30,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signIn: async () => ({ error: "not initialized" }),
   signUp: async () => ({ error: "not initialized" }),
+  signInWithGoogle: async () => {},
   signOut: async () => {},
   resetPassword: async () => ({ error: "not initialized" }),
 });
@@ -45,6 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUpAction = async (email: string, password: string, name: string) => {
     const { error } = await signUp.email({ email, password, name });
     return { error: error?.message ?? null };
+  };
+
+  const signInWithGoogleAction = async () => {
+    await signIn.social({ provider: "google", callbackURL: "/app" });
   };
 
   const signOutAction = async () => {
@@ -63,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading: isPending,
         signIn: signInAction,
         signUp: signUpAction,
+        signInWithGoogle: signInWithGoogleAction,
         signOut: signOutAction,
         resetPassword: resetPasswordAction,
       }}

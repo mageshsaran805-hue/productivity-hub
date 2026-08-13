@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { GoogleButton } from "@/components/auth/google-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
@@ -49,6 +50,14 @@ export default function SignupPage() {
   return (
     <AuthLayout title="Create your account" subtitle="Start your productivity journey today">
       <form onSubmit={handleSubmit} className="space-y-4">
+        <GoogleButton />
+
+        <div className="flex items-center gap-3 py-1">
+          <div className="h-px flex-1 bg-border/50" />
+          <span className="text-xs text-foreground/40">or sign up with email</span>
+          <div className="h-px flex-1 bg-border/50" />
+        </div>
+
         <Input label="Full Name" placeholder="John Doe" icon={<User className="w-4 h-4" />} value={name} onChange={(e) => setName(e.target.value)} required />
         <Input label="Email" type="email" placeholder="you@example.com" icon={<Mail className="w-4 h-4" />} value={email} onChange={(e) => setEmail(e.target.value)} required />
         <div className="relative">

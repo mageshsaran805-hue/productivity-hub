@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { GoogleButton } from "@/components/auth/google-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Lock, ArrowRight } from "lucide-react";
@@ -35,6 +36,14 @@ export default function LoginPage() {
   return (
     <AuthLayout title="Welcome back" subtitle="Sign in to your account to continue">
       <form onSubmit={handleSubmit} className="space-y-4">
+        <GoogleButton />
+
+        <div className="flex items-center gap-3 py-1">
+          <div className="h-px flex-1 bg-border/50" />
+          <span className="text-xs text-foreground/40">or sign in with email</span>
+          <div className="h-px flex-1 bg-border/50" />
+        </div>
+
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
