@@ -35,6 +35,7 @@ export function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
+            <Link href="#about" className="text-sm text-foreground/60 hover:text-foreground transition-colors">About</Link>
             <Link href="#features" className="text-sm text-foreground/60 hover:text-foreground transition-colors">Features</Link>
             <Link href="#faq" className="text-sm text-foreground/60 hover:text-foreground transition-colors">FAQ</Link>
           </div>
@@ -65,6 +66,7 @@ export function Navbar() {
           className="md:hidden bg-white/90 dark:bg-gray-950/90 backdrop-blur-xl border-b border-white/20 dark:border-white/10"
         >
           <div className="px-4 py-4 space-y-3">
+            <Link href="#about" className="block text-sm text-foreground/60 hover:text-foreground py-2">About</Link>
             <Link href="#features" className="block text-sm text-foreground/60 hover:text-foreground py-2">Features</Link>
             <Link href="#faq" className="block text-sm text-foreground/60 hover:text-foreground py-2">FAQ</Link>
             <div className="flex gap-3 pt-2">

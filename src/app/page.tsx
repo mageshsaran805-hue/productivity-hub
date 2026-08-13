@@ -1,4 +1,4 @@
-import { Navbar, HeroSection, FeaturesSection, TestimonialsSection, FAQSection, CTASection, Footer } from "@/components/landing";
+import { Navbar, HeroSection, AboutSection, FeaturesSection, FAQSection, CTASection, Footer } from "@/components/landing";
 import { AnimatedBackground } from "@/components/animations/animated-background";
 
 export default function LandingPage() {
@@ -7,8 +7,8 @@ export default function LandingPage() {
       <AnimatedBackground variant="landing" />
       <Navbar />
       <HeroSection />
+      <AboutSection />
       <FeaturesSection />
-      <TestimonialsSection />
       <FAQSection />
       <CTASection />
       <Footer />

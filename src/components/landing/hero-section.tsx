@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Play, Sparkles, CheckCircle2, Target, Calendar, GitFork } from "lucide-react";
+import { Sparkles, CheckCircle2, Target, Calendar, GitFork, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export function HeroSection() {
@@ -11,7 +11,7 @@ export function HeroSection() {
       {/* Floating cards */}
       <motion.div
         className="absolute top-32 right-[15%] hidden lg:block"
-        animate={{ y: [0, -15, 0] }}
+        animate={{ y: [0, -15, 0], rotate: [0, 1, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
       >
         <div className="w-64 p-4 rounded-2xl bg-white/80 dark:bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl">
@@ -33,7 +33,7 @@ export function HeroSection() {
 
       <motion.div
         className="absolute top-48 left-[10%] hidden lg:block"
-        animate={{ y: [0, 15, 0] }}
+        animate={{ y: [0, 15, 0], rotate: [0, -1, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
       >
         <div className="w-56 p-4 rounded-2xl bg-white/80 dark:bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl">
@@ -54,7 +54,7 @@ export function HeroSection() {
 
       <motion.div
         className="absolute bottom-32 right-[20%] hidden lg:block"
-        animate={{ y: [0, -10, 0] }}
+        animate={{ y: [0, -10, 0], rotate: [0, 1.5, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
       >
         <div className="w-48 p-4 rounded-2xl bg-white/80 dark:bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl">
@@ -123,20 +123,43 @@ export function HeroSection() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
           >
             <Link href="/auth/signup">
-              <Button size="xl" icon={<Sparkles className="w-5 h-5" />}>
+              <Button size="xl" icon={<Sparkles className="w-5 h-5" />} iconRight={<ArrowRight className="w-5 h-5" />}>
                 Get Started Free
               </Button>
             </Link>
-            <Button variant="glass" size="xl" icon={<Play className="w-5 h-5" />}>
-              Watch Demo
-            </Button>
+            <Link href="/auth/login">
+              <Button variant="glass" size="xl">
+                Sign In
+              </Button>
+            </Link>
+          </motion.div>
+
+          {/* Trust strip */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 mb-16"
+          >
+            {[
+              "Free forever",
+              "No credit card required",
+              "Your data, your rules",
+              "Built for focus",
+            ].map((item) => (
+              <span key={item} className="flex items-center gap-1.5 text-sm text-foreground/50">
+                <CheckCircle2 className="w-3.5 h-3.5 text-success-500" />
+                {item}
+              </span>
+            ))}
           </motion.div>
 
           {/* Dashboard preview */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5 }}
+            initial={{ opacity: 0, y: 40, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+            whileHover={{ y: -4 }}
             className="relative mx-auto max-w-5xl"
           >
             <div className="rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl">
