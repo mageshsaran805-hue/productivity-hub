@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  reactCompiler: true,
   experimental: {
-    optimizePackageImports: ["framer-motion", "@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities", "@tanstack/react-query"],
+    optimizePackageImports: ["framer-motion", "@tanstack/react-query"],
   },
   async headers() {
     return [
@@ -15,6 +16,10 @@ const nextConfig: NextConfig = {
           { key: "X-DNS-Prefetch-Control", value: "on" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
         ],
+      },
+      {
+        source: "/sw.js",
+        headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }],
       },
     ];
   },

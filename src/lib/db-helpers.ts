@@ -1,5 +1,3 @@
-import type { Workspace } from "@/types";
-
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     ...init,
@@ -37,15 +35,4 @@ export async function initializeUser(
     method: "POST",
   });
   return result ? { id: result.workspaceId } : null;
-}
-
-export async function getDefaultWorkspace(userId: string) {
-  void userId;
-  const workspaces = await api<Workspace[]>("/api/workspaces");
-  if (workspaces.length > 0) return workspaces[0];
-
-  return api<Workspace>("/api/workspaces", {
-    method: "POST",
-    body: JSON.stringify({ name: "Personal", color: "#6366f1" }),
-  });
 }

@@ -65,7 +65,17 @@ function AppContent({ children }: { children: React.ReactNode }) {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+            staleTime: 30_000,
+          },
+        },
+      })
+  );
 
   return (
     <QueryClientProvider client={queryClient}>

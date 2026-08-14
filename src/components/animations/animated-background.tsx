@@ -19,13 +19,14 @@ export function AnimatedBackground({ variant = "default", className }: AnimatedB
       { from: "#f59e0b", to: "#ef4444" },
     ];
 
-    // Deterministic positions based on index — avoids hydration mismatch from Math.random()
+    // Deterministic positions and keyframes — avoids hydration mismatch and
+    // re-randomizing on every render.
     const positions = [
-      { x: 15, y: 20, size: 200, duration: 18, delay: 0 },
-      { x: 70, y: 60, size: 280, duration: 22, delay: 1.5 },
-      { x: 45, y: 80, size: 240, duration: 16, delay: 3 },
-      { x: 80, y: 30, size: 320, duration: 20, delay: 0.5 },
-      { x: 30, y: 70, size: 260, duration: 24, delay: 2 },
+      { x: 15, y: 20, size: 200, duration: 18, delay: 0, driftX: 14, driftY: -12 },
+      { x: 70, y: 60, size: 280, duration: 22, delay: 1.5, driftX: -10, driftY: 9 },
+      { x: 45, y: 80, size: 240, duration: 16, delay: 3, driftX: 12, driftY: 8 },
+      { x: 80, y: 30, size: 320, duration: 20, delay: 0.5, driftX: -8, driftY: -14 },
+      { x: 30, y: 70, size: 260, duration: 24, delay: 2, driftX: 10, driftY: 6 },
     ];
 
     return Array.from({ length: variant === "landing" ? 5 : 3 }, (_, i) => ({
@@ -36,6 +37,8 @@ export function AnimatedBackground({ variant = "default", className }: AnimatedB
       size: positions[i].size,
       duration: positions[i].duration,
       delay: positions[i].delay,
+      driftX: positions[i].driftX,
+      driftY: positions[i].driftY,
     }));
   }, [variant]);
 
@@ -53,10 +56,11 @@ export function AnimatedBackground({ variant = "default", className }: AnimatedB
             background: `linear-gradient(135deg, ${blob.color.from}, ${blob.color.to})`,
             width: blob.size,
             height: blob.size,
+            willChange: "transform",
           }}
           animate={{
-            x: [blob.x, blob.x + (Math.random() - 0.5) * 30, blob.x],
-            y: [blob.y, blob.y + (Math.random() - 0.5) * 30, blob.y],
+            x: [blob.x, blob.x + blob.driftX, blob.x],
+            y: [blob.y, blob.y + blob.driftY, blob.y],
             scale: [1, 1.1, 1, 0.95, 1],
           }}
           transition={{

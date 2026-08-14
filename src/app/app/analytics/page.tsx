@@ -4,10 +4,12 @@ import { PageTransition } from "@/components/animations/page-transition";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { useAnalyticsData } from "@/lib/queries";
 import { BarChart3, Loader2, CheckSquare, Target, Flame } from "lucide-react";
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  LineChart, Line, CartesianGrid,
-} from "recharts";
+import dynamic from "next/dynamic";
+
+const AnalyticsCharts = dynamic(() =>
+  import("@/components/analytics/analytics-charts").then((m) => m.AnalyticsCharts),
+  { loading: () => <div className="h-[240px] rounded-3xl bg-foreground/5 animate-pulse" /> }
+);
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string | number; color: string }) {
   return (
@@ -58,41 +60,7 @@ export default function AnalyticsPage() {
               <StatCard icon={<Flame className="w-5 h-5 text-white" />} label="Total habits" value={data.totalHabits} color="bg-accent-500" />
             </div>
 
-            {/* Weekly chart */}
-            <GlassPanel className="p-6">
-              <h3 className="text-sm font-semibold mb-4">This week</h3>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={data.weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="day" tick={{ fontSize: 12, fill: "rgba(255,255,255,0.4)" }} />
-                  <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.4)" }} allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{ background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 13 }}
-                    labelStyle={{ color: "rgba(255,255,255,0.7)" }}
-                  />
-                  <Bar dataKey="tasks" fill="#4F46E5" radius={[4, 4, 0, 0]} name="Tasks" />
-                  <Bar dataKey="habits" fill="#06B6D4" radius={[4, 4, 0, 0]} name="Habits" />
-                </BarChart>
-              </ResponsiveContainer>
-            </GlassPanel>
-
-            {/* Monthly trend */}
-            <GlassPanel className="p-6">
-              <h3 className="text-sm font-semibold mb-4">Monthly trend</h3>
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={data.monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "rgba(255,255,255,0.4)" }} />
-                  <YAxis tick={{ fontSize: 12, fill: "rgba(255,255,255,0.4)" }} allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{ background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 13 }}
-                    labelStyle={{ color: "rgba(255,255,255,0.7)" }}
-                  />
-                  <Line type="monotone" dataKey="tasks" stroke="#4F46E5" strokeWidth={2} dot={{ fill: "#4F46E5", r: 4 }} name="Tasks" />
-                  <Line type="monotone" dataKey="habits" stroke="#06B6D4" strokeWidth={2} dot={{ fill: "#06B6D4", r: 4 }} name="Habits" />
-                </LineChart>
-              </ResponsiveContainer>
-            </GlassPanel>
+            <AnalyticsCharts weeklyData={data.weeklyData} monthlyData={data.monthlyData} />
           </>
         )}
       </div>
