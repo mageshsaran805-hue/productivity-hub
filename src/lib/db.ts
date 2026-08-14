@@ -19,6 +19,12 @@ export {
   workspaceCreateSchema,
   sendEmailSchema,
   requireUuid,
+  subtaskCreateSchema,
+  subtaskUpdateSchema,
+  tagCreateSchema,
+  tagUpdateSchema,
+  taskCommentCreateSchema,
+  taskCommentUpdateSchema,
 } from "./validation";
 export { rateLimit } from "./rate-limit";
 

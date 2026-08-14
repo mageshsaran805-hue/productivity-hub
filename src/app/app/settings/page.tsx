@@ -7,12 +7,165 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useAuth } from "@/hooks/use-auth";
-import { useUserSettings, useUpdateUserSettings, useTestNotification } from "@/lib/queries";
+import { useUserSettings, useUpdateUserSettings, useTestNotification, useTags, useCreateTag, useUpdateTag, useDeleteTag } from "@/lib/queries";
 import { NotificationPermissionStatus } from "@/components/ui/notification-permission-status";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { Bell, User, Palette, ChevronRight, Moon, Trash2, AlertTriangle, Send } from "lucide-react";
+import { Bell, User, Palette, ChevronRight, Moon, Trash2, AlertTriangle, Send, Tag as TagIcon, Plus, Pencil, Check, X } from "lucide-react";
 import toast from "react-hot-toast";
+
+const TAG_COLORS = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#6366f1", "#8b5cf6", "#ec4899"];
+
+function TagManager() {
+  const { data: tags } = useTags();
+  const createTag = useCreateTag();
+  const updateTag = useUpdateTag();
+  const deleteTag = useDeleteTag();
+
+  const [newName, setNewName] = useState("");
+  const [newColor, setNewColor] = useState(TAG_COLORS[0]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const [editingColor, setEditingColor] = useState(TAG_COLORS[0]);
+
+  const handleCreate = () => {
+    if (!newName.trim()) return;
+    createTag.mutate(
+      { name: newName.trim(), color: newColor },
+      {
+        onSuccess: () => {
+          setNewName("");
+          setNewColor(TAG_COLORS[0]);
+          toast.success("Tag created");
+        },
+        onError: () => toast.error("Failed to create tag"),
+      }
+    );
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingId || !editingName.trim()) return;
+    updateTag.mutate(
+      { id: editingId, name: editingName.trim(), color: editingColor },
+      {
+        onSuccess: () => {
+          setEditingId(null);
+          toast.success("Tag updated");
+        },
+        onError: () => toast.error("Failed to update tag"),
+      }
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Tags let you categorize and filter your tasks. Create tags here, then assign them in a task&apos;s detail view.
+      </p>
+
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="New tag name"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+        />
+        <div className="flex items-center gap-1.5">
+          {TAG_COLORS.slice(0, 5).map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setNewColor(c)}
+              className="w-7 h-7 rounded-full transition-all"
+              style={{
+                backgroundColor: c,
+                outline: newColor === c ? `2px solid ${c}` : "none",
+                outlineOffset: 2,
+              }}
+            />
+          ))}
+        </div>
+        <Button onClick={handleCreate} icon={<Plus className="w-4 h-4" />} disabled={!newName.trim()}>
+          Add
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        {(tags ?? []).map((tag) => (
+          <div key={tag.id} className="flex items-center gap-3 p-3 rounded-2xl border border-border/50 bg-foreground/[0.02]">
+            {editingId === tag.id ? (
+              <>
+                <Input
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSaveEdit()}
+                  className="flex-1"
+                />
+                <div className="flex items-center gap-1.5">
+                  {TAG_COLORS.slice(0, 5).map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setEditingColor(c)}
+                      className="w-5 h-5 rounded-full transition-all"
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={handleSaveEdit}
+                  className="p-2 rounded-lg hover:bg-emerald-500/10 text-emerald-400 transition-colors"
+                  aria-label="Save tag"
+                >
+                  <Check className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setEditingId(null)}
+                  className="p-2 rounded-lg hover:bg-foreground/5 text-muted-foreground transition-colors"
+                  aria-label="Cancel edit"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: tag.color }}
+                />
+                <span className="flex-1 text-sm font-medium">{tag.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {tag.task_count ?? 0} task{(tag.task_count ?? 0) === 1 ? "" : "s"}
+                </span>
+                <button
+                  onClick={() => {
+                    setEditingId(tag.id);
+                    setEditingName(tag.name);
+                    setEditingColor(tag.color);
+                  }}
+                  className="p-2 rounded-lg hover:bg-foreground/5 text-muted-foreground transition-colors"
+                  aria-label="Edit tag"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => deleteTag.mutate(tag.id)}
+                  className="p-2 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors"
+                  aria-label="Delete tag"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            )}
+          </div>
+        ))}
+        {!tags?.length && (
+          <p className="text-xs text-muted-foreground">No tags yet — create your first one above.</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -152,6 +305,13 @@ export default function SettingsPage() {
           </div>
         </div>
       ),
+    },
+    {
+      id: "tags",
+      icon: TagIcon,
+      label: "Tags",
+      color: "text-yellow-500",
+      render: () => <TagManager />,
     },
     {
       id: "profile",

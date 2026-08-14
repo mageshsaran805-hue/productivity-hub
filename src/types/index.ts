@@ -70,6 +70,7 @@ export interface Tag {
   name: string;
   color: string;
   created_at: string;
+  task_count?: number;
 }
 
 export interface TaskTag {
@@ -94,6 +95,8 @@ export interface TaskComment {
   content: string;
   created_at: string;
   updated_at: string;
+  email?: string;
+  name?: string;
 }
 
 export interface HabitCategory {

@@ -12,6 +12,7 @@ const listQuerySchema = z.object({
   due_start: z.string().optional(),
   due_end: z.string().optional(),
   due_next_24h: z.enum(["true"]).optional(),
+  tag_id: z.string().optional(),
 });
 
 export async function GET(req: Request) {
@@ -24,6 +25,10 @@ export async function GET(req: Request) {
     const conditions = ["user_id = $1", "deleted_at IS NULL"];
     let sql = `SELECT * FROM tasks WHERE ${conditions.join(" AND ")}`;
 
+    if (q.tag_id) {
+      params.push(q.tag_id);
+      sql += ` AND id IN (SELECT task_id FROM task_tags WHERE tag_id = $${params.length})`;
+    }
     if (q.project_id) {
       params.push(q.project_id);
       sql += ` AND project_id = $${params.length}`;

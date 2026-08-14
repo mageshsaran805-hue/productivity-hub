@@ -95,6 +95,27 @@ export const sendEmailSchema = z.object({
   taskIds: z.array(z.string().min(1)).max(100).optional(),
 });
 
+export const subtaskCreateSchema = z.object({
+  title: z.string().trim().min(1).max(500),
+  completed: z.boolean().optional(),
+  order: z.number().int().optional(),
+});
+
+export const subtaskUpdateSchema = subtaskCreateSchema.partial();
+
+export const tagCreateSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  color: z.string().max(50).optional(),
+});
+
+export const tagUpdateSchema = tagCreateSchema.partial();
+
+export const taskCommentCreateSchema = z.object({
+  content: z.string().trim().min(1).max(5000),
+});
+
+export const taskCommentUpdateSchema = taskCommentCreateSchema.partial();
+
 /** Validates a UUID path/query parameter; throws a clean 400 instead of
  *  letting Postgres fail with a cast error (500). */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

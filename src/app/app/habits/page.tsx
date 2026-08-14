@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { useDefaultWorkspace } from "@/hooks/use-workspace";
-import { useHabits, useLogHabit, useDeleteHabit, useCreateHabit } from "@/lib/queries";
+import { useHabits, useLogHabit, useDeleteHabit, useCreateHabit, useUpdateHabit } from "@/lib/queries";
 import { PageTransition } from "@/components/animations/page-transition";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,9 @@ import { Select } from "@/components/ui/select";
 import { StaggerChildren, StaggerItem } from "@/components/animations/stagger-children";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CardSkeleton } from "@/components/ui/skeleton";
-import { Plus, Target, CheckCircle2, Sparkles, Check, Trash2, Flame } from "lucide-react";
+import { Plus, Target, CheckCircle2, Sparkles, Check, Trash2, Flame, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
-import type { HabitLog } from "@/types";
+import type { HabitLog, Habit } from "@/types";
 import { cn } from "@/lib/utils";
 
 const PRESET_COLORS = [
@@ -48,8 +48,10 @@ export default function HabitsPage() {
   const logHabit = useLogHabit();
   const deleteHabit = useDeleteHabit();
   const createHabit = useCreateHabit();
+  const updateHabit = useUpdateHabit();
 
   const [showModal, setShowModal] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [newName, setNewName] = useState("");
   const [newFrequency, setNewFrequency] = useState("daily");
   const [newColor, setNewColor] = useState("#6366f1");
@@ -147,6 +149,30 @@ export default function HabitsPage() {
   const handleDeleteHabit = (id: string) => {
     deleteHabit.mutate(id);
     toast.success("Habit deleted");
+  };
+
+  const updateHabitAction = async () => {
+    if (!editingHabit) throw new Error("No habit selected");
+    await updateHabit.mutateAsync({
+      id: editingHabit.id,
+      name: newName.trim(),
+      frequency: newFrequency as "daily" | "weekly" | "monthly",
+      color: newColor,
+      reminder_time: newReminderTime || undefined,
+      reminder_days: newReminderTime ? newReminderDays : undefined,
+    });
+    setEditingHabit(null);
+    toast.success("Habit updated");
+  };
+
+  // Populate the form fields when opening the edit modal
+  const openEdit = (habit: Habit) => {
+    setEditingHabit(habit);
+    setNewName(habit.name);
+    setNewFrequency(habit.frequency);
+    setNewColor(habit.color || "#6366f1");
+    setNewReminderTime(habit.reminder_time?.slice(0, 5) ?? "");
+    setNewReminderDays(habit.reminder_days?.length ? habit.reminder_days : [0, 1, 2, 3, 4, 5, 6]);
   };
 
   // ── Loading ────────────────────────────────────────────────────────
@@ -340,6 +366,13 @@ export default function HabitsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button
+                        onClick={() => openEdit(habit)}
+                        className="shrink-0 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-foreground/5 text-foreground/30 hover:text-foreground transition-all"
+                        aria-label="Edit habit"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteHabit(habit.id)}
                         className="shrink-0 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-foreground/30 hover:text-red-400 transition-all"
                         aria-label="Delete habit"
@@ -423,7 +456,33 @@ export default function HabitsPage() {
           onReminderDaysChange={setNewReminderDays}
           onSubmit={() => createHabitAction().catch((err: Error) => toast.error(err.message))}
           loading={createHabit.isPending}
+          submitLabel="Create Habit"
         />
+      </Modal>
+
+      {/* Edit modal */}
+      <Modal
+        isOpen={!!editingHabit}
+        onClose={() => setEditingHabit(null)}
+        title="Edit Habit"
+      >
+        {editingHabit && (
+          <HabitForm
+            name={newName}
+            onNameChange={setNewName}
+            frequency={newFrequency}
+            onFrequencyChange={setNewFrequency}
+            color={newColor}
+            onColorChange={setNewColor}
+            reminderTime={newReminderTime}
+            onReminderTimeChange={setNewReminderTime}
+            reminderDays={newReminderDays}
+            onReminderDaysChange={setNewReminderDays}
+            onSubmit={() => updateHabitAction().catch((err: Error) => toast.error(err.message))}
+            loading={updateHabit.isPending}
+            submitLabel="Save Changes"
+          />
+        )}
       </Modal>
     </PageTransition>
   );
@@ -443,6 +502,7 @@ function HabitForm({
   onReminderDaysChange,
   onSubmit,
   loading,
+  submitLabel,
 }: {
   name: string;
   onNameChange: (v: string) => void;
@@ -456,6 +516,7 @@ function HabitForm({
   onReminderDaysChange: (v: number[]) => void;
   onSubmit: () => void;
   loading: boolean;
+  submitLabel?: string;
 }) {
   const toggleDay = (day: number) => {
     if (reminderDays.includes(day)) {
@@ -547,7 +608,7 @@ function HabitForm({
         </div>
       </div>
       <Button type="submit" className="w-full" loading={loading}>
-        Create Habit
+        {submitLabel ?? "Create Habit"}
       </Button>
     </form>
   );

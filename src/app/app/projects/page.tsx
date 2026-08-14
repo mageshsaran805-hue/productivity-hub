@@ -11,8 +11,10 @@ import { StaggerChildren, StaggerItem } from "@/components/animations/stagger-ch
 import { useAuth } from "@/hooks/use-auth";
 import { useDefaultWorkspace } from "@/hooks/use-workspace";
 import { useProjects, useCreateProject, useDeleteProject } from "@/lib/queries";
-import { FolderKanban, Plus, Search, Trash2 } from "lucide-react";
+import { ProjectEditModal } from "@/components/projects/project-edit-modal";
+import { FolderKanban, Plus, Search, Trash2, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
+import type { Project } from "@/types";
 
 const COLORS = ["#6366f1", "#22c55e", "#f59e0b", "#06b6d4", "#ef4444", "#ec4899"];
 
@@ -24,6 +26,7 @@ export default function ProjectsPage() {
   const deleteProject = useDeleteProject();
 
   const [showModal, setShowModal] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -146,6 +149,13 @@ export default function ProjectsPage() {
                       </div>
                     </div>
                     <button
+                      onClick={() => setEditingProject(project)}
+                      className="shrink-0 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-foreground/5 text-foreground/30 hover:text-foreground transition-all"
+                      aria-label="Edit project"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => handleDelete(project.id)}
                       className="shrink-0 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-foreground/30 hover:text-red-400 transition-all"
                       aria-label="Delete project"
@@ -223,6 +233,8 @@ export default function ProjectsPage() {
             </Button>
           </div>
         </Modal>
+
+        <ProjectEditModal project={editingProject} onClose={() => setEditingProject(null)} />
       </div>
     </PageTransition>
   );

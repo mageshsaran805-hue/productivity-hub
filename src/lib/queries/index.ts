@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import type { Task, Project, Habit, HabitLog, CalendarEvent, UserSettings, AppNotification } from "@/types";
+import type { Task, Project, Habit, HabitLog, CalendarEvent, UserSettings, AppNotification, SubTask, Tag, TaskComment } from "@/types";
 
 // ─── API helper ───────────────────────────────────────────────────────────
 // All data access goes through server-side, session-authenticated routes.
@@ -41,6 +41,15 @@ export function useTasks(projectId?: string) {
     queryKey: ["tasks", projectId ?? "all"],
     staleTime: 30_000,
     queryFn: () => get<Task[]>(`/api/tasks${projectId ? `?project_id=${encodeURIComponent(projectId)}` : ""}`),
+  });
+}
+
+export function useTasksForTag(tagId: string | null) {
+  return useQuery({
+    queryKey: ["tasks", "tag", tagId ?? "none"],
+    enabled: !!tagId,
+    staleTime: 30_000,
+    queryFn: () => get<Task[]>(`/api/tasks?tag_id=${encodeURIComponent(tagId as string)}`),
   });
 }
 
@@ -121,6 +130,157 @@ export function useCompleteTask() {
   });
 }
 
+// ─── SUBTASKS ────────────────────────────────────────────────────────────
+
+export function useSubtasks(taskId: string) {
+  return useQuery({
+    queryKey: ["subtasks", taskId],
+    enabled: !!taskId,
+    staleTime: 30_000,
+    queryFn: () => get<SubTask[]>(`/api/tasks/${encodeURIComponent(taskId)}/subtasks`),
+  });
+}
+
+export function useCreateSubtask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, ...body }: { taskId: string } & Partial<SubTask>) =>
+      post<SubTask>(`/api/tasks/${encodeURIComponent(taskId)}/subtasks`, body),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["subtasks", variables.taskId] });
+    },
+  });
+}
+
+export function useUpdateSubtask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, id, ...body }: { taskId: string; id: string } & Partial<SubTask>) =>
+      patch<SubTask>(`/api/tasks/${encodeURIComponent(taskId)}/subtasks/${encodeURIComponent(id)}`, body),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["subtasks", variables.taskId] });
+    },
+  });
+}
+
+export function useDeleteSubtask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, id }: { taskId: string; id: string }) =>
+      del<{ success: boolean }>(`/api/tasks/${encodeURIComponent(taskId)}/subtasks/${encodeURIComponent(id)}`),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["subtasks", variables.taskId] });
+    },
+  });
+}
+
+// ─── TAGS ────────────────────────────────────────────────────────────────
+
+export function useTags() {
+  return useQuery({
+    queryKey: ["tags"],
+    staleTime: 30_000,
+    queryFn: () => get<Tag[]>("/api/tags"),
+  });
+}
+
+export function useCreateTag() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (tag: Partial<Tag>) => post<Tag>("/api/tags", tag),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
+    },
+  });
+}
+
+export function useUpdateTag() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (tag: Partial<Tag> & { id: string }) =>
+      patch<Tag>(`/api/tags/${encodeURIComponent(tag.id)}`, tag),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
+    },
+  });
+}
+
+export function useDeleteTag() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => del<{ success: boolean }>(`/api/tags/${encodeURIComponent(id)}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
+    },
+  });
+}
+
+export function useTaskTags(taskId: string) {
+  return useQuery({
+    queryKey: ["task_tags", taskId],
+    enabled: !!taskId,
+    staleTime: 30_000,
+    queryFn: () => get<Tag[]>(`/api/tasks/${encodeURIComponent(taskId)}/tags`),
+  });
+}
+
+export function useAssignTag() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, tagId }: { taskId: string; tagId: string }) =>
+      post<{ task_id: string; tag_id: string }>(`/api/tasks/${encodeURIComponent(taskId)}/tags`, { tag_id: tagId }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["task_tags", variables.taskId] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
+    },
+  });
+}
+
+export function useUnassignTag() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, tagId }: { taskId: string; tagId: string }) =>
+      del<{ success: boolean }>(`/api/tasks/${encodeURIComponent(taskId)}/tags/${encodeURIComponent(tagId)}`),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["task_tags", variables.taskId] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
+    },
+  });
+}
+
+// ─── TASK COMMENTS ───────────────────────────────────────────────────────
+
+export function useTaskComments(taskId: string) {
+  return useQuery({
+    queryKey: ["task_comments", taskId],
+    enabled: !!taskId,
+    staleTime: 15_000,
+    queryFn: () => get<TaskComment[]>(`/api/tasks/${encodeURIComponent(taskId)}/comments`),
+  });
+}
+
+export function useCreateTaskComment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, content }: { taskId: string; content: string }) =>
+      post<TaskComment>(`/api/tasks/${encodeURIComponent(taskId)}/comments`, { content }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["task_comments", variables.taskId] });
+    },
+  });
+}
+
+export function useDeleteTaskComment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, id }: { taskId: string; id: string }) =>
+      del<{ success: boolean }>(`/api/tasks/${encodeURIComponent(taskId)}/comments/${encodeURIComponent(id)}`),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["task_comments", variables.taskId] });
+    },
+  });
+}
+
 // ─── PROJECTS ────────────────────────────────────────────────────────────
 
 export function useProjects() {
@@ -138,6 +298,20 @@ export function useDeleteProject() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["projects_due"] });
+    },
+  });
+}
+
+export function useUpdateProject() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (project: Partial<Project> & { id: string }) =>
+      patch<Project>(`/api/projects/${encodeURIComponent(project.id)}`, project),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects_due"] });
+      queryClient.invalidateQueries({ queryKey: ["calendar_events"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard_stats"] });
     },
   });
 }
@@ -192,6 +366,18 @@ export function useCreateHabit() {
     mutationFn: (habit: Partial<Habit>) => post<Habit>("/api/habits", habit),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["habits"] });
+    },
+  });
+}
+
+export function useUpdateHabit() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (habit: Partial<Habit> & { id: string }) =>
+      patch<Habit>(`/api/habits/${encodeURIComponent(habit.id)}`, habit),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["habits"] });
+      queryClient.invalidateQueries({ queryKey: ["habits", "weekly_stats"] });
     },
   });
 }

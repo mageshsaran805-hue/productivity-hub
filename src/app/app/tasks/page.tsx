@@ -9,12 +9,15 @@ import { Tabs } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NewTaskModal } from "@/components/tasks/new-task-modal";
 import { TaskEditModal } from "@/components/tasks/task-edit-modal";
+import { TaskDetailModal } from "@/components/tasks/task-detail-modal";
 import {
   useTasks,
+  useTasksForTag,
   useTaskSearch,
   useCompleteTask,
   useDeleteTask,
   useUpdateTask,
+  useTags,
 } from "@/lib/queries";
 import type { Task } from "@/types";
 import toast from "react-hot-toast";
@@ -121,6 +124,7 @@ function DueDate({ date }: { date?: string | null }) {
 
 export default function TasksPage() {
   const { data: tasks, isLoading, error } = useTasks();
+  const { data: allTags } = useTags();
 
   const completeTask = useCompleteTask();
   const deleteTask = useDeleteTask();
@@ -129,11 +133,15 @@ export default function TasksPage() {
   const [activeView, setActiveView] = useState("list");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [detailTask, setDetailTask] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const { data: searchResults, isLoading: searchLoading, error: searchError } = useTaskSearch(searchQuery);
 
   const isSearching = searchQuery.trim().length > 0;
-  const activeTasks = (isSearching ? searchResults ?? [] : tasks ?? []).filter((t) => t.status !== "archived");
+  const isTagFiltered = !isSearching && !!selectedTag;
+  const { data: filteredByTag } = useTasksForTag(isTagFiltered ? selectedTag : null);
+  const activeTasks = (isSearching ? searchResults ?? [] : (isTagFiltered ? filteredByTag ?? [] : tasks ?? [])).filter((t) => t.status !== "archived");
   const resolvedIsLoading = isSearching ? searchLoading : isLoading;
   const resolvedError = isSearching ? searchError : error;
 
@@ -177,17 +185,23 @@ export default function TasksPage() {
       </button>
 
       <div className="flex-1 min-w-0">
-        <span
-          className={`text-sm font-medium block truncate ${
-            task.status === "completed" ? "line-through text-muted-foreground" : "text-foreground/80"
-          }`}
+        <button
+          onClick={() => setDetailTask(task)}
+          className="text-left w-full"
+          aria-label={`Open details for ${task.title}`}
         >
-          {task.title}
-        </span>
-        <div className="flex items-center gap-2 mt-1">
-          <PriorityBadge priority={task.priority} />
-          <DueDate date={task.due_date} />
-        </div>
+          <span
+            className={`text-sm font-medium block truncate ${
+              task.status === "completed" ? "line-through text-muted-foreground" : "text-foreground/80"
+            }`}
+          >
+            {task.title}
+          </span>
+          <div className="flex items-center gap-2 mt-1">
+            <PriorityBadge priority={task.priority} />
+            <DueDate date={task.due_date} />
+          </div>
+        </button>
       </div>
 
       <button
@@ -230,6 +244,39 @@ export default function TasksPage() {
             className="w-full h-10 pl-9 pr-4 rounded-2xl bg-foreground/[0.03] border border-border/50 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary-500/50 transition-colors"
           />
         </div>
+
+        {allTags && allTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setSelectedTag(null)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                !selectedTag
+                  ? "bg-primary-500/15 text-primary-500 border-primary-500/40"
+                  : "text-muted-foreground border-border/50 hover:bg-foreground/5"
+              }`}
+            >
+              All
+            </button>
+            {allTags.map((tag) => (
+              <button
+                key={tag.id}
+                onClick={() => setSelectedTag(tag.id)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  selectedTag === tag.id
+                    ? "bg-primary-500/15 text-primary-500 border-primary-500/40"
+                    : "text-muted-foreground border-border/50 hover:bg-foreground/5"
+                }`}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: tag.color }}
+                />
+                {tag.name}
+                <span className="text-[10px] opacity-60">{tag.task_count ?? 0}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <Tabs tabs={views} activeTab={activeView} onChange={setActiveView} />
@@ -335,6 +382,14 @@ export default function TasksPage() {
 
         <NewTaskModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         <TaskEditModal task={editingTask} onClose={() => setEditingTask(null)} />
+        <TaskDetailModal
+          task={detailTask}
+          onClose={() => setDetailTask(null)}
+          onEdit={(task) => {
+            setDetailTask(null);
+            setEditingTask(task);
+          }}
+        />
       </div>
     </PageTransition>
   );
