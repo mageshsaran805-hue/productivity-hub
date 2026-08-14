@@ -16,6 +16,7 @@ export const taskCreateSchema = z.object({
   priority: z.enum(["urgent", "high", "medium", "low", "none"]).optional(),
   due_date: z.string().optional().nullable(),
   start_date: z.string().optional().nullable(),
+  remind_before_minutes: z.number().int().min(1).max(30 * 24 * 60).optional().nullable(),
   is_recurring: z.boolean().optional(),
   recurring_rule: z.string().max(500).optional().nullable(),
   is_favorite: z.boolean().optional(),

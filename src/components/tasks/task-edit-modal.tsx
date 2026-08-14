@@ -23,6 +23,17 @@ const RECURRENCE_OPTIONS = [
   { value: "yearly", label: "Yearly" },
 ];
 
+const REMIND_OPTIONS = [
+  { value: "", label: "No reminder" },
+  { value: "15", label: "15 minutes before" },
+  { value: "30", label: "30 minutes before" },
+  { value: "60", label: "1 hour before" },
+  { value: "180", label: "3 hours before" },
+  { value: "1440", label: "1 day before" },
+  { value: "4320", label: "3 days before" },
+  { value: "10080", label: "1 week before" },
+];
+
 export function TaskEditModal({ task, onClose }: TaskEditModalProps) {
   const updateTask = useUpdateTask();
   const [title, setTitle] = useState(task?.title ?? "");
@@ -30,6 +41,7 @@ export function TaskEditModal({ task, onClose }: TaskEditModalProps) {
   const [priority, setPriority] = useState<string>(task?.priority ?? "medium");
   const [status, setStatus] = useState<string>(task?.status ?? "todo");
   const [dueDate, setDueDate] = useState(task?.due_date?.slice(0, 10) ?? "");
+  const [remindBefore, setRemindBefore] = useState<string>(task?.remind_before_minutes ? String(task.remind_before_minutes) : "");
   const [recurrence, setRecurrence] = useState(task?.recurring_rule ?? "");
 
   const reset = () => {
@@ -39,6 +51,7 @@ export function TaskEditModal({ task, onClose }: TaskEditModalProps) {
     setPriority(task.priority);
     setStatus(task.status);
     setDueDate(task.due_date?.slice(0, 10) ?? "");
+    setRemindBefore(task.remind_before_minutes ? String(task.remind_before_minutes) : "");
     setRecurrence(task.recurring_rule ?? "");
   };
 
@@ -53,6 +66,7 @@ export function TaskEditModal({ task, onClose }: TaskEditModalProps) {
         priority: priority as Task["priority"],
         status: status as Task["status"],
         due_date: dueDate || undefined,
+        remind_before_minutes: remindBefore ? Number(remindBefore) : null,
         is_recurring: !!recurrence,
         recurring_rule: recurrence || undefined,
       });
@@ -134,6 +148,20 @@ export function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                 placeholder="Does not repeat"
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground/80">Remind me</label>
+            <Select
+              options={REMIND_OPTIONS}
+              value={remindBefore}
+              onChange={setRemindBefore}
+              placeholder="No reminder"
+              disabled={!dueDate}
+            />
+            {!dueDate && (
+              <p className="text-xs text-muted-foreground">Set a due date to schedule a reminder.</p>
+            )}
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-2">

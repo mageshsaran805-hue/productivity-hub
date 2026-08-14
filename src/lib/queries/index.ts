@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import type { Task, Project, Habit, HabitLog, CalendarEvent, UserSettings } from "@/types";
+import type { Task, Project, Habit, HabitLog, CalendarEvent, UserSettings, AppNotification } from "@/types";
 
 // ─── API helper ───────────────────────────────────────────────────────────
 // All data access goes through server-side, session-authenticated routes.
@@ -295,11 +295,60 @@ export function useDueNotifications() {
   });
 }
 
+export function useNotifications() {
+  return useQuery({
+    queryKey: ["notifications"],
+    staleTime: 30_000,
+    queryFn: () => get<AppNotification[]>("/api/notifications?limit=100"),
+  });
+}
+
 export function useUnreadNotifications() {
   return useQuery({
-    queryKey: ["tasks", "unread_count"],
+    queryKey: ["notifications", "unread_count"],
     staleTime: 30_000,
     queryFn: () => get<{ count: number }>("/api/notifications/unread-count"),
+  });
+}
+
+export function useMarkNotificationRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => post<{ updated: number }>("/api/notifications/read", { id }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread_count"] });
+    },
+  });
+}
+
+export function useMarkAllNotificationsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => post<{ updated: number }>("/api/notifications/read", { all: true }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread_count"] });
+    },
+  });
+}
+
+export function useTestNotification() {
+  return useMutation({
+    mutationFn: () => post<{ sent: number; subscribed: number }>("/api/notifications/test", {}),
+  });
+}
+
+export function useCheckNotifications() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => post<{ created: AppNotification[] }>("/api/notifications/check", {}),
+    onSuccess: (data) => {
+      if (data.created.length > 0) {
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        queryClient.invalidateQueries({ queryKey: ["notifications", "unread_count"] });
+      }
+    },
   });
 }
 

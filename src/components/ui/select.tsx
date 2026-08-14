@@ -16,6 +16,7 @@ interface SelectProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export function Select({
@@ -24,6 +25,7 @@ export function Select({
   onChange,
   placeholder = "Select...",
   className,
+  disabled = false,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -42,10 +44,11 @@ export function Select({
     <div ref={ref} className="relative">
       <button
         type="button"
+        disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "flex items-center justify-between w-full h-11 px-4 bg-white/50 dark:bg-white/5 backdrop-blur-xl border border-border/50 hover:border-border rounded-2xl text-sm transition-all duration-200",
-          "focus:outline-none focus:ring-2 focus:ring-primary-500/30",
+          "focus:outline-none focus:ring-2 focus:ring-primary-500/30 disabled:opacity-50 disabled:pointer-events-none",
           className,
         )}
       >

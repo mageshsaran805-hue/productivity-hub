@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useBrowserNotifications } from "@/hooks/use-notifications";
+import { useNotificationScheduler } from "@/hooks/use-notification-scheduler";
 import { useServiceWorker } from "@/hooks/use-service-worker";
 import { InstallPrompt } from "@/components/layout/install-prompt";
 
@@ -27,6 +28,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   // must be called before early returns — Rules of Hooks
   useServiceWorker();
   useBrowserNotifications();
+  useNotificationScheduler();
 
   useEffect(() => {
     if (!loading && !user) {

@@ -7,16 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useAuth } from "@/hooks/use-auth";
-import { useUserSettings, useUpdateUserSettings } from "@/lib/queries";
+import { useUserSettings, useUpdateUserSettings, useTestNotification } from "@/lib/queries";
+import { NotificationPermissionStatus } from "@/components/ui/notification-permission-status";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { Bell, User, Palette, ChevronRight, Moon, Trash2, AlertTriangle } from "lucide-react";
+import { Bell, User, Palette, ChevronRight, Moon, Trash2, AlertTriangle, Send } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const { data: settings } = useUserSettings();
   const updateSettings = useUpdateUserSettings();
+  const testNotification = useTestNotification();
   const router = useRouter();
   const [activeSection, setActiveSection] = useState("notifications");
   const [notifState, setNotifState] = useState({ email: true, push: true, reminders: false });
@@ -116,6 +118,38 @@ export default function SettingsPage() {
               />
             </div>
           ))}
+
+          <div className="pt-3 border-t border-border/50 space-y-3">
+            <NotificationPermissionStatus />
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium">Send test notification</p>
+                <p className="text-xs text-foreground/40">
+                  Fire a test push + in-app notification to verify everything works
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                loading={testNotification.isPending}
+                onClick={() => {
+                  testNotification.mutate(
+                    undefined,
+                    {
+                      onSuccess: (res) => {
+                        if (res.sent > 0) toast.success("Test notification sent!");
+                        else toast.error("No devices subscribed. Open the app and enable push first.");
+                      },
+                      onError: () => toast.error("Failed to send test notification"),
+                    },
+                  );
+                }}
+                icon={<Send className="w-3.5 h-3.5" />}
+              >
+                Send test
+              </Button>
+            </div>
+          </div>
         </div>
       ),
     },

@@ -105,6 +105,7 @@ CREATE TABLE tasks (
                                   CHECK (priority IN ('urgent', 'high', 'medium', 'low', 'none')),
     due_date          timestamptz,
     start_date        timestamptz,
+    remind_before_minutes integer,        -- minutes before due to remind (NULL = none)
     completed_at      timestamptz,
     is_recurring      boolean     NOT NULL DEFAULT false,
     recurring_rule    text,                 -- rrule string (e.g. 'FREQ=WEEKLY;BYDAY=MO')
@@ -342,6 +343,7 @@ CREATE TABLE notifications (
     message     text,
     read        boolean     NOT NULL DEFAULT false,
     data        jsonb,               -- flexible payload per notification type
+    dedup_key   text,                -- stable key preventing duplicate inserts
     created_at  timestamptz NOT NULL DEFAULT now()
 );
 
@@ -351,6 +353,7 @@ COMMENT ON COLUMN notifications.data       IS 'Type-specific payload (e.g. {"tas
 
 CREATE INDEX idx_notifications_user_id_read ON notifications(user_id, read);
 CREATE INDEX idx_notifications_created_at   ON notifications(created_at);
+CREATE UNIQUE INDEX idx_notifications_dedup_key ON notifications(user_id, dedup_key) WHERE dedup_key IS NOT NULL;
 
 -- =============================================================================
 -- ACTIVITY LOGS

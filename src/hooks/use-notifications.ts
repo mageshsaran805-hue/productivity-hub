@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserSettings } from "@/lib/queries";
 import { useDueNotifications } from "@/lib/queries";
@@ -16,11 +16,16 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
+/**
+ * Sets up the push pipeline: registers the service worker, subscribes to push
+ * and saves the subscription server-side. Surfacing of due-task and habit
+ * reminders is handled by useNotificationScheduler (near-real-time while the
+ * app is open) and the daily cron (when it isn't).
+ */
 export function useBrowserNotifications() {
   const { user } = useAuth();
   const { data: settings } = useUserSettings();
   const { data: dueTasks } = useDueNotifications();
-  const notifiedRef = useRef<Set<string>>(new Set());
 
   // Register service worker and subscribe for push notifications
   useEffect(() => {
@@ -85,38 +90,6 @@ export function useBrowserNotifications() {
     };
     sync();
   }, [user?.id, settings?.notifications_push]);
-
-  // Trigger an immediate push check for due tasks (once per session)
-  useEffect(() => {
-    if (!user?.id || !settings?.notifications_push) return;
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
-    if (sessionStorage.getItem("push_checked")) return;
-    sessionStorage.setItem("push_checked", "true");
-
-    fetch("/api/notifications/send-push", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    }).catch(() => {});
-  }, [user?.id, settings?.notifications_push]);
-
-  // Fallback: show in-page browser notifications while the site is open
-  useEffect(() => {
-    if (!user?.id || !settings || !dueTasks?.length) return;
-
-    if (settings.notifications_push && "Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-
-    if (settings.notifications_push && "Notification" in window && Notification.permission === "granted") {
-      for (const task of dueTasks) {
-        if (notifiedRef.current.has(task.id)) continue;
-        notifiedRef.current.add(task.id);
-        new Notification("Task Due Soon", {
-          body: `${task.title} — due ${new Date(task.due_date!).toLocaleDateString()}`,
-        });
-      }
-    }
-  }, [user?.id, settings, dueTasks]);
 
   // Trigger email notification once per session
   useEffect(() => {

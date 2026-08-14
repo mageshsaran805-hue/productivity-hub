@@ -45,6 +45,7 @@ export async function PATCH(req: Request, { params }: Params) {
       "priority",
       "due_date",
       "start_date",
+      "remind_before_minutes",
       "is_recurring",
       "recurring_rule",
       "is_favorite",

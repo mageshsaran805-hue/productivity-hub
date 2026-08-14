@@ -44,6 +44,7 @@ export interface Task {
   priority: "urgent" | "high" | "medium" | "low" | "none";
   due_date?: string;
   start_date?: string;
+  remind_before_minutes?: number | null;
   completed_at?: string;
   is_recurring: boolean;
   recurring_rule?: string;
@@ -155,11 +156,13 @@ export interface Notification {
   user_id: string;
   type: "task_reminder" | "habit_reminder" | "due_date" | "achievement" | "system";
   title: string;
-  message: string;
+  message?: string | null;
   read: boolean;
-  data?: Record<string, unknown>;
+  data?: Record<string, unknown> | null;
   created_at: string;
 }
+
+export type AppNotification = Notification;
 
 export interface UserSettings {
   id: string;

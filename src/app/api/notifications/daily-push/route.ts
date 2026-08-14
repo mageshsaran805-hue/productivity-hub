@@ -1,5 +1,6 @@
 import { pool } from "@/lib/db";
 import { sendPush, type PushSubscriptionRow } from "@/lib/push";
+import { createNotification } from "@/lib/notifications";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,8 @@ function weekdayToday(timezone: string): number {
 //   1. Tasks due within the next 24h for every user.
 //   2. Habit reminders scheduled for today (reminder_days includes today's
 //      weekday) when the user has notifications_reminders enabled.
+// Also writes in-app notification rows so the feed is populated even if the
+// user never has the app open (the client scheduler handles exact timing).
 // Runs at most once per day on the Hobby plan.
 export async function GET() {
   try {
@@ -57,7 +60,7 @@ export async function GET() {
       const weekday = weekdayToday(tz);
 
       const { rows: tasks } = await pool.query(
-        `SELECT id, title, due_date FROM tasks
+        `SELECT id, title, due_date, remind_before_minutes FROM tasks
          WHERE user_id = $1 AND deleted_at IS NULL AND status != 'completed'
          AND due_date IS NOT NULL AND due_date <= $2 AND due_date >= $3
          ORDER BY due_date ASC LIMIT 10`,
@@ -80,6 +83,13 @@ export async function GET() {
 
       for (const sub of subscriptions) {
         for (const task of tasks) {
+          await createNotification(userId, {
+            type: task.remind_before_minutes ? "task_reminder" : "due_date",
+            title: task.remind_before_minutes ? "Task due soon" : "Task due today",
+            message: `${task.title} — due ${new Date(task.due_date).toLocaleString()}`,
+            data: { task_id: task.id, due_date: task.due_date },
+            dedupKey: `task-due:${task.id}:${new Date(task.due_date).toISOString().slice(0, 10)}`,
+          });
           const res = await sendPush(sub, {
             title: "Task due soon",
             body: `${task.title} — due ${new Date(task.due_date).toLocaleString()}`,
@@ -89,11 +99,19 @@ export async function GET() {
           if (res.ok) sent++;
         }
         for (const habit of habits) {
+          const dateISO = now.toISOString().slice(0, 10);
+          await createNotification(userId, {
+            type: "habit_reminder",
+            title: "Habit reminder",
+            message: `Don't forget to ${habit.name} today`,
+            data: { habit_id: habit.id, date: dateISO },
+            dedupKey: `habit:${habit.id}:${dateISO}`,
+          });
           const res = await sendPush(sub, {
             title: "Habit reminder",
             body: `Don't forget to ${habit.name} today`,
             url: "/app/habits",
-            tag: `habit-${habit.id}-${now.toISOString().slice(0, 10)}`,
+            tag: `habit-${habit.id}-${dateISO}`,
           });
           if (res.ok) sent++;
         }
