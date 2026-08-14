@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { AnimatedBackground } from "@/components/animations/animated-background";
+import { useServiceWorker } from "@/hooks/use-service-worker";
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
 
@@ -12,8 +13,10 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
+  useServiceWorker();
+
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4">
+    <div className="relative min-h-dvh flex items-center justify-center p-4">
       <AnimatedBackground variant="auth" />
       
       <div className="absolute top-6 left-6 z-10">

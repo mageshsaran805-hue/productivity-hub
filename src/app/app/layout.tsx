@@ -15,6 +15,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useBrowserNotifications } from "@/hooks/use-notifications";
+import { useServiceWorker } from "@/hooks/use-service-worker";
+import { InstallPrompt } from "@/components/layout/install-prompt";
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
@@ -23,6 +25,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const { paletteOpen, newTaskOpen, closePalette, togglePalette, openNewTask, closeNewTask } = useCommandPaletteContext();
 
   // must be called before early returns — Rules of Hooks
+  useServiceWorker();
   useBrowserNotifications();
 
   useEffect(() => {
@@ -33,7 +36,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-dvh">
         <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -42,7 +45,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-dvh overflow-hidden">
       <AnimatedBackground variant="dashboard" />
       {!isMobile && <Sidebar />}
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
@@ -60,6 +63,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
         onNewTask={() => { closePalette(); openNewTask(); }}
       />
       <NewTaskModal isOpen={newTaskOpen} onClose={closeNewTask} />
+      <InstallPrompt />
     </div>
   );
 }

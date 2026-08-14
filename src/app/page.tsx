@@ -3,7 +3,7 @@ import { AnimatedBackground } from "@/components/animations/animated-background"
 
 export default function LandingPage() {
   return (
-    <main className="relative min-h-screen">
+    <main className="relative min-h-dvh">
       <AnimatedBackground variant="landing" />
       <Navbar />
       <HeroSection />
