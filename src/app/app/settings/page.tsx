@@ -5,19 +5,25 @@ import { PageTransition } from "@/components/animations/page-transition";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { useAuth } from "@/hooks/use-auth";
 import { useUserSettings, useUpdateUserSettings } from "@/lib/queries";
 import { authClient } from "@/lib/auth-client";
-import { Bell, User, Palette, ChevronRight, Moon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Bell, User, Palette, ChevronRight, Moon, Trash2, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const { data: settings } = useUserSettings();
   const updateSettings = useUpdateUserSettings();
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState("notifications");
   const [notifState, setNotifState] = useState({ email: true, push: true, reminders: false });
   const [name, setName] = useState(user?.name ?? "");
+  const [confirmText, setConfirmText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -53,6 +59,25 @@ export default function SettingsPage() {
     const { error } = await authClient.updateUser({ name: name.trim() });
     if (error) return toast.error(error.message || "Failed to update profile");
     toast.success("Profile updated!");
+  };
+
+  const handleDeleteAccount = async () => {
+    if (confirmText !== "DELETE") return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch("/api/account/delete", { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to delete account");
+      }
+      await authClient.signOut();
+      toast.success("Account deleted");
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete account");
+      setIsDeleting(false);
+    }
   };
 
   const sections = [
@@ -107,6 +132,22 @@ export default function SettingsPage() {
         </div>
       ),
     },
+    {
+      id: "danger",
+      icon: Trash2,
+      label: "Delete Account",
+      color: "text-red-400",
+      render: () => (
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Permanently delete your account and all associated data. This action cannot be undone.
+          </p>
+          <Button variant="danger" onClick={() => setShowDeleteModal(true)} icon={<AlertTriangle className="w-4 h-4" />}>
+            Delete Account
+          </Button>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -145,6 +186,39 @@ export default function SettingsPage() {
             );
           })}
         </div>
+
+        <Modal isOpen={showDeleteModal} onClose={() => { if (!isDeleting) { setShowDeleteModal(false); setConfirmText(""); } }} title="Delete Account">
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This will permanently delete your account, tasks, projects, habits, calendar events, and all other data.
+              Type <span className="font-semibold text-foreground">DELETE</span> to confirm.
+            </p>
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="DELETE"
+            />
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                variant="ghost"
+                type="button"
+                onClick={() => { setShowDeleteModal(false); setConfirmText(""); }}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                type="button"
+                disabled={confirmText !== "DELETE" || isDeleting}
+                loading={isDeleting}
+                onClick={handleDeleteAccount}
+              >
+                Delete permanently
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </PageTransition>
   );

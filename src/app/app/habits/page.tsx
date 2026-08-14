@@ -19,6 +19,7 @@ import { CardSkeleton } from "@/components/ui/skeleton";
 import { Plus, Target, CheckCircle2, Sparkles, Check, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import type { HabitLog } from "@/types";
+import { cn } from "@/lib/utils";
 
 const PRESET_COLORS = [
   "#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4",
@@ -52,6 +53,8 @@ export default function HabitsPage() {
   const [newName, setNewName] = useState("");
   const [newFrequency, setNewFrequency] = useState("daily");
   const [newColor, setNewColor] = useState("#6366f1");
+  const [newReminderTime, setNewReminderTime] = useState("");
+  const [newReminderDays, setNewReminderDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
   const weekDates = useMemo(() => getWeekDates(), []);
@@ -113,13 +116,17 @@ export default function HabitsPage() {
       color: newColor,
       icon: "Target",
       frequency_times: 1,
+      reminder_time: newReminderTime || undefined,
+      reminder_days: newReminderTime ? newReminderDays : undefined,
     });
     setShowModal(false);
     setNewName("");
     setNewFrequency("daily");
     setNewColor("#6366f1");
+    setNewReminderTime("");
+    setNewReminderDays([0, 1, 2, 3, 4, 5, 6]);
     toast.success("Habit created!");
-  }, [createHabit, user?.id, workspace?.id, newName, newFrequency, newColor]);
+  }, [createHabit, user?.id, workspace?.id, newName, newFrequency, newColor, newReminderTime, newReminderDays]);
 
   const handleToggle = useCallback(
     (habitId: string, completed: boolean) => {
@@ -199,6 +206,10 @@ export default function HabitsPage() {
             onFrequencyChange={setNewFrequency}
             color={newColor}
             onColorChange={setNewColor}
+            reminderTime={newReminderTime}
+            onReminderTimeChange={setNewReminderTime}
+            reminderDays={newReminderDays}
+            onReminderDaysChange={setNewReminderDays}
             onSubmit={() => createHabitAction().catch((err: Error) => toast.error(err.message))}
             loading={createHabit.isPending}
           />
@@ -385,6 +396,10 @@ export default function HabitsPage() {
           onFrequencyChange={setNewFrequency}
           color={newColor}
           onColorChange={setNewColor}
+          reminderTime={newReminderTime}
+          onReminderTimeChange={setNewReminderTime}
+          reminderDays={newReminderDays}
+          onReminderDaysChange={setNewReminderDays}
           onSubmit={() => createHabitAction().catch((err: Error) => toast.error(err.message))}
           loading={createHabit.isPending}
         />
@@ -401,6 +416,10 @@ function HabitForm({
   onFrequencyChange,
   color,
   onColorChange,
+  reminderTime,
+  onReminderTimeChange,
+  reminderDays,
+  onReminderDaysChange,
   onSubmit,
   loading,
 }: {
@@ -410,9 +429,21 @@ function HabitForm({
   onFrequencyChange: (v: string) => void;
   color: string;
   onColorChange: (v: string) => void;
+  reminderTime: string;
+  onReminderTimeChange: (v: string) => void;
+  reminderDays: number[];
+  onReminderDaysChange: (v: number[]) => void;
   onSubmit: () => void;
   loading: boolean;
 }) {
+  const toggleDay = (day: number) => {
+    if (reminderDays.includes(day)) {
+      onReminderDaysChange(reminderDays.filter((d) => d !== day));
+    } else {
+      onReminderDaysChange([...reminderDays, day].sort((a, b) => a - b));
+    }
+  };
+
   return (
     <form
       onSubmit={(e) => {
@@ -442,6 +473,37 @@ function HabitForm({
         onChange={onFrequencyChange}
         placeholder="Frequency"
       />
+      <Input
+        label="Reminder time (optional)"
+        type="time"
+        value={reminderTime}
+        onChange={(e) => onReminderTimeChange(e.target.value)}
+      />
+      {reminderTime && (
+        <div>
+          <label className="mb-2 block text-sm font-medium text-foreground/80">
+            Remind on days
+          </label>
+          <div className="flex gap-1.5">
+            {DAY_LABELS.map((label, i) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => toggleDay(i)}
+                className={cn(
+                  "flex-1 h-9 rounded-lg text-xs font-medium border transition-all",
+                  reminderDays.includes(i)
+                    ? "bg-primary-500/15 text-primary-500 border-primary-500/40"
+                    : "text-muted-foreground border-border/50 hover:bg-foreground/5",
+                )}
+                aria-pressed={reminderDays.includes(i)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div>
         <label className="mb-2 block text-sm font-medium text-foreground/80">
           Color

@@ -5,15 +5,10 @@ import { PageTransition } from "@/components/animations/page-transition";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { useAuth } from "@/hooks/use-auth";
 import { useUncategorizedTasks, useCompleteTask, useDeleteTask } from "@/lib/queries";
 import { Inbox, Trash2, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
-import { Modal } from "@/components/ui/modal";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { useCreateTask } from "@/lib/queries";
-import { useDefaultWorkspace } from "@/hooks/use-workspace";
+import { NewTaskModal } from "@/components/tasks/new-task-modal";
 import toast from "react-hot-toast";
 
 function PriorityBadge({ priority }: { priority?: string | null }) {
@@ -44,24 +39,10 @@ function DueDate({ date }: { date?: string | null }) {
 }
 
 export default function InboxPage() {
-  const { user } = useAuth();
   const { data: tasks, isLoading, error } = useUncategorizedTasks();
   const completeTask = useCompleteTask();
   const deleteTask = useDeleteTask();
-  const createTask = useCreateTask();
-  const { data: workspace } = useDefaultWorkspace();
   const [modalOpen, setModalOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newPriority, setNewPriority] = useState<"none" | "low" | "medium" | "high" | "urgent">("none");
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim() || !user?.id || !workspace?.id) return;
-    await createTask.mutateAsync(
-      { title: newTitle.trim(), priority: newPriority, workspace_id: workspace.id },
-      { onSuccess: () => { setModalOpen(false); setNewTitle(""); setNewPriority("none"); }, onError: () => toast.error("Failed to create task") }
-    );
-  };
 
   const handleComplete = (id: string) => {
     completeTask.mutate(id);
@@ -153,21 +134,7 @@ export default function InboxPage() {
           )}
         </AnimatePresence>
 
-        <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="New Task">
-          <form onSubmit={handleCreate} className="space-y-4">
-            <Input label="Title" placeholder="What needs to be done?" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
-            <Select value={newPriority} onChange={(v) => setNewPriority(v as typeof newPriority)}
-              options={[
-                { value: "none", label: "No priority" },
-                { value: "low", label: "Low" },
-                { value: "medium", label: "Medium" },
-                { value: "high", label: "High" },
-                { value: "urgent", label: "Urgent" },
-              ]}
-            />
-            <Button type="submit" loading={createTask.isPending} className="w-full">Create</Button>
-          </form>
-        </Modal>
+        <NewTaskModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
       </div>
     </PageTransition>
   );

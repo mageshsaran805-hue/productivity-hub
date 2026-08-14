@@ -7,15 +7,10 @@ import { GlassPanel } from "@/components/ui/glass-panel";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Modal } from "@/components/ui/modal";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { useAuth } from "@/hooks/use-auth";
-import { useDefaultWorkspace } from "@/hooks/use-workspace";
+import { NewTaskModal } from "@/components/tasks/new-task-modal";
 import {
   useTasks,
   useTaskSearch,
-  useCreateTask,
   useCompleteTask,
   useDeleteTask,
   useUpdateTask,
@@ -123,11 +118,8 @@ function DueDate({ date }: { date?: string | null }) {
 }
 
 export default function TasksPage() {
-  const { user } = useAuth();
-  const { data: workspace } = useDefaultWorkspace();
   const { data: tasks, isLoading, error } = useTasks();
 
-  const createTask = useCreateTask();
   const completeTask = useCompleteTask();
   const deleteTask = useDeleteTask();
   const updateTask = useUpdateTask();
@@ -136,35 +128,11 @@ export default function TasksPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { data: searchResults, isLoading: searchLoading, error: searchError } = useTaskSearch(searchQuery);
-  const [newTask, setNewTask] = useState({
-    title: "",
-    priority: "medium",
-    due_date: "",
-  });
 
   const isSearching = searchQuery.trim().length > 0;
   const activeTasks = (isSearching ? searchResults ?? [] : tasks ?? []).filter((t) => t.status !== "archived");
   const resolvedIsLoading = isSearching ? searchLoading : isLoading;
   const resolvedError = isSearching ? searchError : error;
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTask.title.trim() || !user?.id || !workspace?.id) return;
-    try {
-      await createTask.mutateAsync({
-        title: newTask.title.trim(),
-        workspace_id: workspace.id,
-        status: "todo",
-        priority: newTask.priority as Task["priority"],
-        due_date: newTask.due_date || undefined,
-      });
-      toast.success("Task created");
-      setNewTask({ title: "", priority: "medium", due_date: "" });
-      setIsModalOpen(false);
-    } catch {
-      toast.error("Failed to create task");
-    }
-  };
 
   const handleToggle = (task: Task) => {
     if (task.status === "completed") {
@@ -354,70 +322,7 @@ export default function TasksPage() {
           </motion.div>
         </AnimatePresence>
 
-        <Modal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          title="New Task"
-        >
-          <form onSubmit={handleCreate} className="space-y-4">
-            <Input
-              label="Title"
-              placeholder="What needs to be done?"
-              value={newTask.title}
-              onChange={(e) =>
-                setNewTask((prev) => ({ ...prev, title: e.target.value }))
-              }
-              autoFocus
-            />
-
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-foreground/80">
-                Priority
-              </label>
-              <Select
-                options={[
-                  { value: "urgent", label: "Urgent" },
-                  { value: "high", label: "High" },
-                  { value: "medium", label: "Medium" },
-                  { value: "low", label: "Low" },
-                  { value: "none", label: "None" },
-                ]}
-                value={newTask.priority}
-                onChange={(value) =>
-                  setNewTask((prev) => ({ ...prev, priority: value }))
-                }
-                placeholder="Select priority"
-              />
-            </div>
-
-            <Input
-              label="Due date"
-              type="date"
-              value={newTask.due_date}
-              onChange={(e) =>
-                setNewTask((prev) => ({ ...prev, due_date: e.target.value }))
-              }
-            />
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <Button
-                variant="ghost"
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={!newTask.title.trim()}
-                loading={createTask.isPending}
-                icon={<Plus className="w-4 h-4" />}
-              >
-                Create
-              </Button>
-            </div>
-          </form>
-        </Modal>
+        <NewTaskModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       </div>
     </PageTransition>
   );

@@ -3,8 +3,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { NewTaskModal } from "@/components/tasks/new-task-modal";
+import { CommandPalette } from "@/components/layout/command-palette";
 import {
   LayoutDashboard, Inbox, Sun, CalendarClock, CheckSquare, FolderKanban,
   Calendar, Target, BarChart3, Bell, Settings, ChevronLeft, ChevronRight,
@@ -34,6 +37,8 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const { isCollapsed, toggleCollapse } = useSidebar();
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
   return (
     <motion.aside
@@ -64,7 +69,9 @@ export function Sidebar() {
 
       {/* Search */}
       <div className={cn("p-3", isCollapsed && "p-2")}>
-        <button className={cn(
+        <button
+          onClick={() => setIsPaletteOpen(true)}
+          className={cn(
           "flex items-center gap-2 w-full px-3 py-2 rounded-xl bg-foreground/5 hover:bg-foreground/10 border border-border/50 text-muted-foreground text-sm transition-all",
           isCollapsed && "justify-center px-2"
         )}>
@@ -153,7 +160,9 @@ export function Sidebar() {
 
       {/* Quick Add */}
       <div className={cn("p-3 border-t border-border/50", isCollapsed && "p-2")}>
-        <button className={cn(
+        <button
+          onClick={() => setIsQuickAddOpen(true)}
+          className={cn(
           "flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-medium hover:shadow-lg hover:shadow-primary-500/25 transition-all",
           isCollapsed && "justify-center px-2"
         )}>
@@ -171,6 +180,14 @@ export function Sidebar() {
       >
         {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
       </button>
+
+      <NewTaskModal isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} />
+      <CommandPalette
+        open={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+        onToggle={() => setIsPaletteOpen((prev) => !prev)}
+        onNewTask={() => { setIsPaletteOpen(false); setIsQuickAddOpen(true); }}
+      />
     </motion.aside>
   );
 }

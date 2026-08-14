@@ -23,9 +23,11 @@ interface CommandItem {
 interface CommandPaletteProps {
   open?: boolean;
   onClose?: () => void;
+  onToggle?: () => void;
+  onNewTask?: () => void;
 }
 
-export function CommandPalette({ open, onClose }: CommandPaletteProps) {
+export function CommandPalette({ open, onClose, onToggle, onNewTask }: CommandPaletteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -34,6 +36,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
   const show = open !== undefined ? open : isOpen;
   const close = onClose || (() => setIsOpen(false));
+  const toggle = onToggle || (() => setIsOpen((prev) => !prev));
 
   const items: CommandItem[] = [
     { id: "dashboard", label: "Go to Dashboard", icon: <LayoutDashboard className="w-4 h-4" />, href: "/app", category: "Navigation" },
@@ -47,8 +50,8 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     { id: "analytics", label: "Go to Analytics", icon: <BarChart3 className="w-4 h-4" />, href: "/app/analytics", category: "Navigation" },
     { id: "notifications", label: "Go to Notifications", icon: <Bell className="w-4 h-4" />, href: "/app/notifications", category: "Navigation" },
     { id: "settings", label: "Go to Settings", icon: <Settings className="w-4 h-4" />, href: "/app/settings", category: "Navigation" },
-    { id: "new-task", label: "Create New Task", description: "Add a task to your list", icon: <Plus className="w-4 h-4" />, category: "Actions" },
-    { id: "new-project", label: "Create New Project", description: "Start a new project", icon: <Plus className="w-4 h-4" />, category: "Actions" },
+    { id: "new-task", label: "Create New Task", description: "Add a task to your list", icon: <Plus className="w-4 h-4" />, action: onNewTask, category: "Actions" },
+    { id: "new-project", label: "Create New Project", description: "Start a new project", icon: <Plus className="w-4 h-4" />, action: onNewTask, category: "Actions" },
     { id: "new-habit", label: "Create New Habit", description: "Track a new habit", icon: <Plus className="w-4 h-4" />, category: "Actions" },
   ];
 
@@ -74,7 +77,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        if (open === undefined) setIsOpen((prev) => !prev);
+        toggle();
       }
       if (e.key === "Escape") {
         close();
@@ -82,7 +85,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open, close]);
+  }, [toggle, close]);
 
   useEffect(() => {
     if (show) {
