@@ -1,7 +1,7 @@
 "use client";
 
 import { SidebarProvider } from "@/hooks/use-sidebar";
-import { Sidebar } from "@/components/layout/sidebar";
+import { Sidebar, MobileSidebar } from "@/components/layout/sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { AnimatedBackground } from "@/components/animations/animated-background";
@@ -47,11 +47,12 @@ function AppContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-dvh overflow-hidden">
       <AnimatedBackground variant="dashboard" />
-      {!isMobile && <Sidebar />}
+      <Sidebar />
+      <MobileSidebar />
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
-        {!isMobile && <TopNav />}
+        <TopNav />
         <main className="flex-1 overflow-y-auto">
-          <div className="p-4 lg:p-6 max-w-7xl mx-auto">{children}</div>
+          <div className="p-4 lg:p-6 pb-20 md:pb-6 max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
       {isMobile && <MobileNav />}

@@ -45,7 +45,7 @@ export function TopNav() {
     <header className="sticky top-0 z-20 h-16 bg-white/40 dark:bg-gray-950/40 backdrop-blur-2xl border-b border-white/20 dark:border-white/10">
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
         <div className="flex items-center gap-3">
-          <button onClick={toggle} className="lg:hidden p-2 rounded-xl hover:bg-foreground/5 transition-colors">
+          <button onClick={toggle} className="md:hidden p-2 rounded-xl hover:bg-foreground/5 transition-colors" aria-label="Open menu">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-foreground">
               <path d="M2.5 5H17.5M2.5 10H17.5M2.5 15H17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
@@ -63,6 +63,14 @@ export function TopNav() {
             <Search className="w-3.5 h-3.5" />
             <span>Quick search...</span>
             <kbd className="px-1 py-0.5 text-[10px] rounded bg-foreground/5 border border-border/50 font-mono">⌘K</kbd>
+          </button>
+
+          <button
+            onClick={openPalette}
+            className="md:hidden p-2 rounded-xl hover:bg-foreground/5 transition-colors text-foreground/60 hover:text-foreground"
+            aria-label="Search"
+          >
+            <Search className="w-4 h-4" />
           </button>
 
           <Link

@@ -3,7 +3,8 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Sun, CheckSquare, LayoutDashboard, Calendar, Target } from "lucide-react";
+import { useSidebar } from "@/hooks/use-sidebar";
+import { Sun, CheckSquare, LayoutDashboard, Calendar, Target, MoreHorizontal } from "lucide-react";
 
 const items = [
   { id: "today", label: "Today", icon: Sun, href: "/app/today" },
@@ -15,6 +16,7 @@ const items = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { open } = useSidebar();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden">
@@ -42,6 +44,18 @@ export function MobileNav() {
               </Link>
             );
           })}
+
+          {/* Open the full menu drawer */}
+          <button
+            onClick={open}
+            className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-foreground/60 hover:text-foreground"
+            aria-label="More"
+          >
+            <div className="p-1.5 rounded-lg">
+              <MoreHorizontal className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] font-medium">More</span>
+          </button>
         </div>
       </div>
     </nav>

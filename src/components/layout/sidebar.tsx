@@ -9,7 +9,7 @@ import { useCommandPaletteContext } from "@/hooks/use-command-palette";
 import {
   LayoutDashboard, Inbox, Sun, CalendarClock, CheckSquare, FolderKanban,
   Calendar, Target, BarChart3, Bell, Settings, ChevronLeft, ChevronRight,
-  Sparkles, Search, Plus
+  Sparkles, Search, Plus, X
 } from "lucide-react";
 
 const navItems = [
@@ -32,20 +32,19 @@ const navItems = [
   ]},
 ];
 
-export function Sidebar() {
+/** Shared sidebar content (logo, search, nav, quick add) used by both the
+ *  desktop sidebar and the mobile drawer. */
+function SidebarContent({ onNavigate, collapsed }: { onNavigate?: () => void; collapsed?: boolean }) {
   const pathname = usePathname();
-  const { isCollapsed, toggleCollapse } = useSidebar();
+  const { isCollapsed: ctxCollapsed } = useSidebar();
+  const isCollapsed = collapsed ?? ctxCollapsed;
   const { openPalette, openNewTask } = useCommandPaletteContext();
 
   return (
-    <motion.aside
-      animate={{ width: isCollapsed ? 72 : 260 }}
-      transition={{ type: "spring", stiffness: 200, damping: 25 }}
-      className="relative h-dvh flex flex-col bg-white/60 dark:bg-gray-950/60 backdrop-blur-2xl border-r border-white/20 dark:border-white/10 z-30"
-    >
+    <>
       {/* Logo */}
       <div className={cn("flex items-center h-16 px-4 border-b border-border/50", isCollapsed && "justify-center")}>
-        <Link href="/app" className="flex items-center gap-2">
+        <Link href="/app" onClick={onNavigate} className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
@@ -67,7 +66,7 @@ export function Sidebar() {
       {/* Search */}
       <div className={cn("p-3", isCollapsed && "p-2")}>
         <button
-          onClick={openPalette}
+          onClick={() => { openPalette(); onNavigate?.(); }}
           className={cn(
           "flex items-center gap-2 w-full px-3 py-2 rounded-xl bg-foreground/5 hover:bg-foreground/10 border border-border/50 text-muted-foreground text-sm transition-all",
           isCollapsed && "justify-center px-2"
@@ -114,7 +113,7 @@ export function Sidebar() {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
                 return (
-                  <Link key={item.id} href={item.href}>
+                  <Link key={item.id} href={item.href} onClick={onNavigate}>
                     <motion.div
                       whileHover={{ x: 2 }}
                       className={cn(
@@ -158,7 +157,7 @@ export function Sidebar() {
       {/* Quick Add */}
       <div className={cn("p-3 border-t border-border/50", isCollapsed && "p-2")}>
         <button
-          onClick={openNewTask}
+          onClick={() => { openNewTask(); onNavigate?.(); }}
           className={cn(
           "flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-medium hover:shadow-lg hover:shadow-primary-500/25 transition-all",
           isCollapsed && "justify-center px-2"
@@ -169,6 +168,21 @@ export function Sidebar() {
           </AnimatePresence>
         </button>
       </div>
+    </>
+  );
+}
+
+/** Desktop sidebar — always visible on md+ screens, supports collapse. */
+export function Sidebar() {
+  const { isCollapsed, toggleCollapse } = useSidebar();
+
+  return (
+    <motion.aside
+      animate={{ width: isCollapsed ? 72 : 260 }}
+      transition={{ type: "spring", stiffness: 200, damping: 25 }}
+      className="hidden md:flex relative h-dvh flex-col bg-white/60 dark:bg-gray-950/60 backdrop-blur-2xl border-r border-white/20 dark:border-white/10 z-30"
+    >
+      <SidebarContent />
 
       {/* Collapse toggle */}
       <button
@@ -178,5 +192,43 @@ export function Sidebar() {
         {isCollapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
       </button>
     </motion.aside>
+  );
+}
+
+/** Mobile drawer sidebar — slides in from the left on small screens. */
+export function MobileSidebar() {
+  const { isOpen, close } = useSidebar();
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={close}
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+          />
+          <motion.aside
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed inset-y-0 left-0 z-50 flex flex-col w-[280px] max-w-[85vw] bg-white/90 dark:bg-gray-950/90 backdrop-blur-2xl border-r border-white/20 dark:border-white/10 shadow-2xl md:hidden"
+          >
+            <button
+              onClick={close}
+              className="absolute top-4 right-3 p-1.5 rounded-lg text-foreground/50 hover:text-foreground hover:bg-foreground/5 transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <SidebarContent onNavigate={close} collapsed={false} />
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
