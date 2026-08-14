@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { NewTaskModal } from "@/components/tasks/new-task-modal";
+import { TaskEditModal } from "@/components/tasks/task-edit-modal";
 import {
   useTasks,
   useTaskSearch,
@@ -24,6 +25,7 @@ import {
   Calendar,
   Plus,
   Trash2,
+  Pencil,
   CalendarDays,
   AlertCircle,
   ArrowUp,
@@ -126,6 +128,7 @@ export default function TasksPage() {
 
   const [activeView, setActiveView] = useState("list");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { data: searchResults, isLoading: searchLoading, error: searchError } = useTaskSearch(searchQuery);
 
@@ -186,6 +189,14 @@ export default function TasksPage() {
           <DueDate date={task.due_date} />
         </div>
       </div>
+
+      <button
+        onClick={() => setEditingTask(task)}
+        className="shrink-0 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-all"
+        aria-label="Edit task"
+      >
+        <Pencil className="w-4 h-4" />
+      </button>
 
       <button
         onClick={() => handleDelete(task.id)}
@@ -323,6 +334,7 @@ export default function TasksPage() {
         </AnimatePresence>
 
         <NewTaskModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        <TaskEditModal task={editingTask} onClose={() => setEditingTask(null)} />
       </div>
     </PageTransition>
   );

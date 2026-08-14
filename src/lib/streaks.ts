@@ -3,8 +3,6 @@
  *  `today` (or yesterday if today not yet completed, so an unfinished today
  *  doesn't break the streak). */
 
-const DAY_MS = 86400000;
-
 function shiftDay(dateStr: string, delta: number) {
   const d = new Date(dateStr + "T00:00:00Z");
   d.setUTCDate(d.getUTCDate() + delta);

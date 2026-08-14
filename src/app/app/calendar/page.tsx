@@ -24,7 +24,8 @@ import {
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCalendarEvents, useTasksDueInRange, useProjectsDueInRange, useCreateCalendarEvent } from "@/lib/queries";
+import { useCalendarEvents, useTasksDueInRange, useProjectsDueInRange, useCreateCalendarEvent, useUpdateCalendarEvent, useDeleteCalendarEvent } from "@/lib/queries";
+import type { CalendarEvent as EventRecord } from "@/types";
 
 type ViewType = "month" | "week" | "day";
 
@@ -87,7 +88,7 @@ function formatTime(date: Date) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-type CalendarEvent = { day: number; date: Date; title: string; time: string; color: string; due_date?: string; kind: "event" | "task" | "project" };
+type CalendarEvent = { day: number; date: Date; title: string; time: string; color: string; due_date?: string; kind: "event" | "task" | "project"; source?: EventRecord };
 
 function useViewEvents(start: Date, end: Date) {
   const startStr = formatDateISO(start);
@@ -111,6 +112,7 @@ function useViewEvents(start: Date, end: Date) {
           color: evt.color,
           due_date: evt.start_date,
           kind: "event",
+          source: evt,
         });
       }
     }
@@ -152,16 +154,18 @@ function useViewEvents(start: Date, end: Date) {
 
 // ─── Event chip ───────────────────────────────────────────────────────────
 
-function EventChip({ event, compact = false }: { event: CalendarEvent; compact?: boolean }) {
+function EventChip({ event, compact = false, onClick }: { event: CalendarEvent; compact?: boolean; onClick?: () => void }) {
   return (
-    <motion.div
+    <motion.button
       layout
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 400, damping: 28 }}
+      onClick={onClick}
       className={cn(
-        "group/chip flex items-center gap-1.5 rounded-lg border transition-shadow",
+        "group/chip flex items-center gap-1.5 rounded-lg border transition-shadow text-left w-full",
         compact ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-[11px]",
+        onClick && "cursor-pointer hover:shadow-md hover:brightness-110",
       )}
       style={{
         backgroundColor: `${event.color}1a`,
@@ -177,7 +181,7 @@ function EventChip({ event, compact = false }: { event: CalendarEvent; compact?:
         <span className="text-[10px] opacity-80 shrink-0">{event.time}</span>
       )}
       <span className="truncate font-semibold">{event.title}</span>
-    </motion.div>
+    </motion.button>
   );
 }
 
@@ -188,6 +192,7 @@ export default function CalendarPage() {
   const [view, setView] = useState<ViewType>("month");
   const [currentDate, setCurrentDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
   const [showModal, setShowModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
 
   const { rangeStart, rangeEnd, headerLabel } = useMemo(() => {
     if (view === "month") {
@@ -256,7 +261,7 @@ export default function CalendarPage() {
             <Button
               size="sm"
               icon={<Plus className="w-4 h-4" />}
-              onClick={() => setShowModal(true)}
+              onClick={() => { setEditingEvent(null); setShowModal(true); }}
               className="bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg shadow-primary-500/20"
             >
               New Event
@@ -332,14 +337,19 @@ export default function CalendarPage() {
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.25 }}
           >
-            {view === "month" && <MonthView events={events} currentDate={currentDate} onNewEvent={() => setShowModal(true)} />}
-            {view === "week" && <WeekView events={events} weekStart={getWeekStart(currentDate)} />}
-            {view === "day" && <DayView events={events} date={currentDate} />}
+            {view === "month" && <MonthView events={events} currentDate={currentDate} onNewEvent={() => { setEditingEvent(null); setShowModal(true); }} onEventClick={(e) => { if (e.source) { setEditingEvent(e); setShowModal(true); } }} />}
+            {view === "week" && <WeekView events={events} weekStart={getWeekStart(currentDate)} onEventClick={(e) => { if (e.source) { setEditingEvent(e); setShowModal(true); } }} />}
+            {view === "day" && <DayView events={events} date={currentDate} onEventClick={(e) => { if (e.source) { setEditingEvent(e); setShowModal(true); } }} />}
           </motion.div>
         </AnimatePresence>
 
-        {/* Create event modal */}
-        <NewEventModal isOpen={showModal} onClose={() => setShowModal(false)} />
+        {/* Event modal (create or edit) */}
+        <NewEventModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          editingEvent={editingEvent}
+          onEditDone={() => setEditingEvent(null)}
+        />
       </div>
     </PageTransition>
   );
@@ -374,10 +384,12 @@ function MonthView({
   events,
   currentDate,
   onNewEvent,
+  onEventClick,
 }: {
   events: CalendarEvent[];
   currentDate: Date;
   onNewEvent: () => void;
+  onEventClick: (e: CalendarEvent) => void;
 }) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -437,7 +449,7 @@ function MonthView({
               </div>
               <div className="mt-1.5 space-y-1">
                 {dayEvents.slice(0, 3).map((event, j) => (
-                  <EventChip key={j} event={event} compact />
+                  <EventChip key={j} event={event} compact onClick={() => onEventClick(event)} />
                 ))}
                 {dayEvents.length > 3 && (
                   <div className="px-1 text-[10px] font-semibold text-muted-foreground">
@@ -455,7 +467,7 @@ function MonthView({
 
 // ─── WEEK VIEW ───────────────────────────────────────────────────────────
 
-function WeekView({ events, weekStart }: { events: CalendarEvent[]; weekStart: Date }) {
+function WeekView({ events, weekStart, onEventClick }: { events: CalendarEvent[]; weekStart: Date; onEventClick: (e: CalendarEvent) => void }) {
   const today = new Date();
 
   return (
@@ -496,7 +508,7 @@ function WeekView({ events, weekStart }: { events: CalendarEvent[]; weekStart: D
                   <div className="text-center text-[10px] text-foreground/25 pt-3">No events</div>
                 )}
                 {dayEvents.map((event, j) => (
-                  <EventChip key={j} event={event} />
+                  <EventChip key={j} event={event} onClick={() => onEventClick(event)} />
                 ))}
               </div>
             </motion.div>
@@ -509,7 +521,7 @@ function WeekView({ events, weekStart }: { events: CalendarEvent[]; weekStart: D
 
 // ─── DAY VIEW ────────────────────────────────────────────────────────────
 
-function DayView({ events, date }: { events: CalendarEvent[]; date: Date }) {
+function DayView({ events, date, onEventClick }: { events: CalendarEvent[]; date: Date; onEventClick: (e: CalendarEvent) => void }) {
   const now = new Date();
   const isTodayDay = isSameDay(date, now);
   const dayEvents = events.filter((e) => isSameDay(e.date, date));
@@ -540,7 +552,7 @@ function DayView({ events, date }: { events: CalendarEvent[]; date: Date }) {
           </div>
           <div className="space-y-1.5">
             {allDayEvents.map((event, j) => (
-              <EventChip key={j} event={event} />
+              <EventChip key={j} event={event} onClick={() => onEventClick(event)} />
             ))}
           </div>
         </div>
@@ -576,7 +588,7 @@ function DayView({ events, date }: { events: CalendarEvent[]; date: Date }) {
               </div>
               <div className="flex-1 py-1 space-y-1">
                 {hourEvents.map((event, j) => (
-                  <EventChip key={j} event={event} />
+                  <EventChip key={j} event={event} onClick={() => onEventClick(event)} />
                 ))}
               </div>
             </div>
@@ -587,10 +599,23 @@ function DayView({ events, date }: { events: CalendarEvent[]; date: Date }) {
   );
 }
 
-// ─── NEW EVENT MODAL ─────────────────────────────────────────────────────
+// ─── EVENT MODAL (create + edit) ────────────────────────────────────────
 
-function NewEventModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function NewEventModal({
+  isOpen,
+  onClose,
+  editingEvent,
+  onEditDone,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  editingEvent: CalendarEvent | null;
+  onEditDone: () => void;
+}) {
   const createEvent = useCreateCalendarEvent();
+  const updateEvent = useUpdateCalendarEvent();
+  const deleteEvent = useDeleteCalendarEvent();
+  const source = editingEvent?.source ?? null;
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(() => formatDateISO(new Date()));
@@ -599,15 +624,35 @@ function NewEventModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
   const [allDay, setAllDay] = useState(false);
   const [color, setColor] = useState(EVENT_COLORS[0]);
 
-  const reset = () => {
-    setTitle("");
-    setDescription("");
-    setDate(formatDateISO(new Date()));
-    setStartTime("09:00");
-    setEndTime("10:00");
-    setAllDay(false);
-    setColor(EVENT_COLORS[0]);
-  };
+  // Sync form fields when switching between create and edit targets.
+  const isEditing = !!source;
+  const [formKey, setFormKey] = useState("");
+
+  const effectiveKey = source?.id ?? "new";
+  if (formKey !== effectiveKey) {
+    if (source) {
+      const start = new Date(source.start_date);
+      const end = new Date(source.end_date);
+      const isAllDay = source.is_all_day || !source.start_date.includes("T");
+      const pad = (n: number) => String(n).padStart(2, "0");
+      setTitle(source.title);
+      setDescription(source.description ?? "");
+      setDate(formatDateISO(start));
+      setStartTime(source.start_date.includes("T") ? `${pad(start.getHours())}:${pad(start.getMinutes())}` : "09:00");
+      setEndTime(source.end_date.includes("T") ? `${pad(end.getHours())}:${pad(end.getMinutes())}` : "10:00");
+      setAllDay(isAllDay);
+      setColor(source.color || EVENT_COLORS[0]);
+    } else {
+      setTitle("");
+      setDescription("");
+      setDate(formatDateISO(new Date()));
+      setStartTime("09:00");
+      setEndTime("10:00");
+      setAllDay(false);
+      setColor(EVENT_COLORS[0]);
+    }
+    setFormKey(effectiveKey);
+  }
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -624,28 +669,47 @@ function NewEventModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
       ? new Date(`${date}T23:59`).toISOString()
       : new Date(`${date}T${endTime || startTime}`).toISOString();
 
+    const payload = {
+      title: title.trim(),
+      description: description.trim() || null,
+      start_date: startIso,
+      end_date: endIso,
+      is_all_day: allDay,
+      color,
+    };
+
     try {
-      await createEvent.mutateAsync({
-        title: title.trim(),
-        description: description.trim() || null,
-        start_date: startIso,
-        end_date: endIso,
-        is_all_day: allDay,
-        color,
-      });
-      toast.success("Event added to your calendar");
-      reset();
+      if (source) {
+        await updateEvent.mutateAsync({ id: source.id, ...payload });
+        toast.success("Event updated");
+      } else {
+        await createEvent.mutateAsync(payload);
+        toast.success("Event added to your calendar");
+      }
       onClose();
+      onEditDone();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create event");
+      toast.error(err instanceof Error ? err.message : "Failed to save event");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!source) return;
+    try {
+      await deleteEvent.mutateAsync(source.id);
+      toast.success("Event deleted");
+      onClose();
+      onEditDone();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete event");
     }
   };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
-      title="New event"
+      onClose={() => { onClose(); onEditDone(); }}
+      title={isEditing ? "Edit event" : "New event"}
       size="md"
     >
       <div className="space-y-4">
@@ -715,17 +779,31 @@ function NewEventModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-2">
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            loading={createEvent.isPending}
-            icon={!createEvent.isPending ? <Plus className="w-4 h-4" /> : <Loader2 className="w-4 h-4 animate-spin" />}
-          >
-            Create event
-          </Button>
+        <div className="flex justify-between items-center gap-3 pt-2">
+          {isEditing ? (
+            <Button
+              variant="ghost"
+              className="text-danger-500 hover:text-danger-600"
+              onClick={handleDelete}
+              loading={deleteEvent.isPending}
+            >
+              Delete
+            </Button>
+          ) : (
+            <span />
+          )}
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={() => { onClose(); onEditDone(); }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              loading={createEvent.isPending || updateEvent.isPending}
+              icon={!createEvent.isPending && !updateEvent.isPending ? <Plus className="w-4 h-4" /> : <Loader2 className="w-4 h-4 animate-spin" />}
+            >
+              {isEditing ? "Save" : "Create event"}
+            </Button>
+          </div>
         </div>
       </div>
     </Modal>

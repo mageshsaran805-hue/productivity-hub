@@ -248,6 +248,34 @@ export function useCreateCalendarEvent() {
   });
 }
 
+export function useUpdateCalendarEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (updates: {
+      id: string;
+      title?: string;
+      description?: string | null;
+      start_date?: string;
+      end_date?: string;
+      is_all_day?: boolean;
+      color?: string;
+    }) => patch<CalendarEvent>(`/api/calendar-events/${encodeURIComponent(updates.id)}`, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["calendar_events"] });
+    },
+  });
+}
+
+export function useDeleteCalendarEvent() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => del<{ success: boolean }>(`/api/calendar-events/${encodeURIComponent(id)}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["calendar_events"] });
+    },
+  });
+}
+
 export function useTasksDueInRange(startDate: string, endDate: string) {
   return useQuery({
     queryKey: ["tasks_due", startDate, endDate],
