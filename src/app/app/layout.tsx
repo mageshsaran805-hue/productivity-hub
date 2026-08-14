@@ -5,6 +5,9 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { TopNav } from "@/components/layout/top-nav";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { AnimatedBackground } from "@/components/animations/animated-background";
+import { CommandPalette } from "@/components/layout/command-palette";
+import { NewTaskModal } from "@/components/tasks/new-task-modal";
+import { CommandPaletteProvider, useCommandPaletteContext } from "@/hooks/use-command-palette";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-media-query";
@@ -17,6 +20,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { paletteOpen, newTaskOpen, closePalette, togglePalette, openNewTask, closeNewTask } = useCommandPaletteContext();
 
   // must be called before early returns — Rules of Hooks
   useBrowserNotifications();
@@ -48,6 +52,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       {isMobile && <MobileNav />}
+
+      <CommandPalette
+        open={paletteOpen}
+        onClose={closePalette}
+        onToggle={togglePalette}
+        onNewTask={() => { closePalette(); openNewTask(); }}
+      />
+      <NewTaskModal isOpen={newTaskOpen} onClose={closeNewTask} />
     </div>
   );
 }
@@ -58,7 +70,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <SidebarProvider>
-        <AppContent>{children}</AppContent>
+        <CommandPaletteProvider>
+          <AppContent>{children}</AppContent>
+        </CommandPaletteProvider>
       </SidebarProvider>
     </QueryClientProvider>
   );

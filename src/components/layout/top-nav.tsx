@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell, Search, LogOut } from "lucide-react";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useAuth } from "@/hooks/use-auth";
+import { useCommandPaletteContext } from "@/hooks/use-command-palette";
 import { getInitials } from "@/lib/utils";
 
 const pageNames: Record<string, string> = {
@@ -28,9 +30,11 @@ export function TopNav() {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const { openPalette } = useCommandPaletteContext();
 
   const title = pageNames[pathname] || "Dashboard";
   const userInitials = user?.email ? getInitials(user.email) : "?";
+  const hasUnseen = false;
 
   const handleSignOut = async () => {
     await signOut();
@@ -52,16 +56,25 @@ export function TopNav() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-foreground/5 border border-border/50 text-muted-foreground text-xs">
+          <button
+            onClick={openPalette}
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-foreground/5 border border-border/50 text-muted-foreground text-xs"
+          >
             <Search className="w-3.5 h-3.5" />
             <span>Quick search...</span>
             <kbd className="px-1 py-0.5 text-[10px] rounded bg-foreground/5 border border-border/50 font-mono">⌘K</kbd>
           </button>
 
-          <button className="relative p-2 rounded-xl hover:bg-foreground/5 transition-colors text-foreground/60 hover:text-foreground">
+          <Link
+            href="/app/notifications"
+            className="relative p-2 rounded-xl hover:bg-foreground/5 transition-colors text-foreground/60 hover:text-foreground"
+            aria-label="Notifications"
+          >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-danger-500" />
-          </button>
+            {hasUnseen && (
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-danger-500" />
+            )}
+          </Link>
 
           {/* User menu */}
           <div className="relative">
