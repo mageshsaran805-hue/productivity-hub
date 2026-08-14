@@ -35,6 +35,8 @@ import {
   Minus,
   ArrowDown,
   Search,
+  ListChecks,
+  Repeat,
 } from "lucide-react";
 
 const views = [
@@ -200,6 +202,17 @@ export default function TasksPage() {
           <div className="flex items-center gap-2 mt-1">
             <PriorityBadge priority={task.priority} />
             <DueDate date={task.due_date} />
+            {task.is_recurring && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-secondary-500 shrink-0" title="Repeats">
+                <Repeat className="w-3 h-3" />
+              </span>
+            )}
+            {typeof task.subtask_count === "number" && task.subtask_count > 0 && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground shrink-0">
+                <ListChecks className="w-3 h-3" />
+                {task.subtask_completed ?? 0}/{task.subtask_count}
+              </span>
+            )}
           </div>
         </button>
       </div>

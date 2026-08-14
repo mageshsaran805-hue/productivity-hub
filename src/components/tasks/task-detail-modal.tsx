@@ -27,6 +27,7 @@ import {
   ListChecks,
   CalendarDays,
   Loader2,
+  Repeat,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
@@ -126,6 +127,12 @@ export function TaskDetailModal({ task, onClose, onEdit }: TaskDetailModalProps)
             >
               {task.priority} priority
             </span>
+            {task.is_recurring && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border border-secondary-500/30 text-secondary-500 bg-secondary-500/10 capitalize">
+                <Repeat className="w-3 h-3" />
+                {task.recurring_rule ?? "recurring"}
+              </span>
+            )}
             {task.due_date && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border border-border/50 text-muted-foreground">
                 <CalendarDays className="w-3 h-3" />
@@ -213,9 +220,16 @@ export function TaskDetailModal({ task, onClose, onEdit }: TaskDetailModalProps)
 
           {/* Subtasks */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground/80 flex items-center gap-1.5">
-              <ListChecks className="w-4 h-4" /> Subtasks
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-foreground/80 flex items-center gap-1.5">
+                <ListChecks className="w-4 h-4" /> Subtasks
+              </label>
+              {subtasks && subtasks.length > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {subtasks.filter((s) => s.completed).length}/{subtasks.length} done
+                </span>
+              )}
+            </div>
             {subtasksLoading ? (
               <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
             ) : (

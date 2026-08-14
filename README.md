@@ -1,491 +1,156 @@
-# 🚀 Productivity Hub
+# Productivity Hub
 
-> **One workspace for your tasks, habits, projects, calendar, and productivity analytics.**
+A full-featured productivity PWA: unified task management, habit tracking with streak analytics, projects, calendar, notifications, and an activity feed — all in one place.
 
-Productivity Hub is a modern full-stack personal productivity platform designed to help you **plan, organize, track, and improve your daily workflow** from a single dashboard.
+Built with Next.js, TypeScript, Postgres, and Tailwind CSS, deployed on Vercel.
 
-Built with **Next.js, TypeScript, PostgreSQL, Supabase, and Better Auth**, it combines task management, habit tracking, project organization, calendar scheduling, notifications, and productivity analytics into one application.
+## Features
 
----
+- **Tasks** — create/edit/delete, statuses, priorities, due dates, drag-and-drop reordering, full-text search, tags, and subtasks. Tasks can be assigned to projects or left uncategorized.
+- **Recurring tasks** — mark a task as recurring (daily / weekly / monthly / yearly, or a custom interval like "every 3 days"); completing it automatically creates the next occurrence.
+- **Projects** — organize tasks into projects with progress tracking, plus an "uncategorized" filter.
+- **Habits** — daily/weekly/monthly habits with colors, categories, reminder times/days, and one-tap logging with streak stats (weekly view + analytics).
+- **Habit categories** — group habits (Health, Learning, Finance, ...) and manage them in Settings.
+- **Calendar** — month view with events and tasks; add/edit/delete calendar events.
+- **Today & Upcoming** — smart views for what's due now and next.
+- **Analytics** — charts for habit streaks and task completion.
+- **Activity feed** — a chronological timeline of everything you create, complete, or change.
+- **Notifications** — PWA push notifications (via VAPID) for task reminders and due dates, plus an in-app notification center. A Vercel cron ticks daily.
+- **Inbox** — quick capture of ideas and quick tasks.
+- **Email** — scheduled task reminders delivered via Resend (test mode when no custom domain is verified).
+- **Google auth** via better-auth, with per-user data isolation.
+- **PWA** — installable, offline-ready manifest + service worker.
 
-## ✨ Features
+## Tech Stack
 
-### ✅ Task Management
+| Layer      | Choice                                        |
+| ---------- | --------------------------------------------- |
+| Framework  | Next.js 16 (App Router), React 19             |
+| Language   | TypeScript                                    |
+| Database   | PostgreSQL (via `pg`)                         |
+| Auth       | better-auth (Google OAuth)                    |
+| Data fetch | TanStack React Query                          |
+| UI         | Tailwind CSS 4, framer-motion, lucide-react   |
+| Charts     | recharts                                      |
+| Push       | web-push + Service Worker + VAPID             |
+| Email      | Resend                                        |
+| Tests      | Vitest                                        |
 
-* Create, edit, complete, and delete tasks
-* List and Kanban board views
-* Priority levels: Urgent, High, Medium, Low
-* Due dates and recurring tasks
-* Favorites
-* Drag-and-drop ordering
-* Full-text task search
-* Subtasks and tags
-* Inbox for quick task capture
-
-### 📁 Project Management
-
-* Organize tasks into projects
-* Active, completed, and archived projects
-* Automatic project progress calculation
-* Custom project colors
-* Project-based task organization
-
-### 🔥 Habit Tracking
-
-* Daily, weekly, monthly, and custom schedules
-* Habit streak tracking
-* Habit categories
-* Daily habit logs
-* Optional values such as:
-
-  * Minutes
-  * Counts
-  * Notes
-
-### 📅 Calendar
-
-Unified calendar containing:
-
-* Tasks
-* Habits
-* Calendar events
-* Upcoming deadlines
-
-### 📊 Analytics
-
-Track your productivity through:
-
-* Task completion trends
-* Habit streaks
-* Productivity statistics
-* Activity history
-
-### 🔔 Notifications
-
-Supports:
-
-* In-app notifications
-* Browser push notifications
-* Optional email notifications using Resend
-* Configurable notification preferences
-
-### 🔐 Authentication & Security
-
-* Email/password authentication
-* Signup and login
-* Forgot/reset password
-* Session-based authentication
-* Protected application routes
-* Cross-user ownership checks
-* PostgreSQL Row Level Security
-* Rate limiting
-* Secure API endpoints
-
----
-
-## 🛠️ Tech Stack
-
-| Layer             | Technology            |
-| ----------------- | --------------------- |
-| Framework         | Next.js 16            |
-| Frontend          | React 19              |
-| Language          | TypeScript            |
-| Styling           | Tailwind CSS v4       |
-| UI                | Radix UI              |
-| Animations        | Framer Motion         |
-| Database          | PostgreSQL            |
-| Database Platform | Supabase              |
-| Authentication    | Better Auth           |
-| Validation        | Zod                   |
-| Notifications     | Browser Push + Resend |
-| Testing           | Vitest                |
-| Deployment        | Vercel                |
-| CI/CD             | GitHub Actions        |
-
----
-
-## 🏗️ Architecture
-
-```text
-┌─────────────────────────────────────┐
-│          Productivity Hub           │
-├─────────────────────────────────────┤
-│                                     │
-│          Next.js App Router         │
-│                                     │
-│  ┌──────────┐     ┌─────────────┐  │
-│  │   UI     │────▶│ API Routes  │  │
-│  │ React 19 │     │ REST APIs   │  │
-│  └──────────┘     └──────┬──────┘  │
-│                          │         │
-│                          ▼         │
-│                   ┌─────────────┐  │
-│                   │ Better Auth │  │
-│                   └──────┬──────┘  │
-│                          │         │
-│                          ▼         │
-│                   ┌─────────────┐  │
-│                   │ PostgreSQL  │  │
-│                   │  Supabase   │  │
-│                   └─────────────┘  │
-│                                     │
-└─────────────────────────────────────┘
-```
-
----
-
-## 📂 Project Structure
-
-```text
-productivity-hub/
-│
-├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       └── cd.yml
-│
-├── public/
-│
-├── scripts/
-│
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   ├── app/
-│   │   └── auth/
-│   │
-│   ├── components/
-│   │
-│   ├── hooks/
-│   │
-│   ├── lib/
-│   │
-│   └── proxy.ts
-│
-├── supabase/
-│   ├── schema.sql
-│   ├── rls.sql
-│   ├── seed.sql
-│   └── better-auth-migration.sql
-│
-├── tests/
-│   ├── unit/
-│   └── integration/
-│
-├── .env.example
-├── next.config.ts
-├── package.json
-├── tailwind.config.ts
-├── tsconfig.json
-└── vitest.config.ts
-```
-
----
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-Make sure you have:
+- Node.js 20+
+- A PostgreSQL database
+- A Google OAuth app (for auth)
+- Resend API key (for email)
+- VAPID keys (for push notifications)
 
-* **Node.js 20+**
-* **npm**
-* **Supabase/PostgreSQL database**
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/mageshsaran805-hue/productivity-hub.git
-cd productivity-hub
-```
-
-### 2. Install dependencies
+### 1. Install
 
 ```bash
 npm install
 ```
 
-### 3. Configure Supabase
+### 2. Configure environment
 
-Create a Supabase project and run the SQL files from the `supabase/` directory in this order:
-
-```text
-schema.sql
-rls.sql
-seed.sql
-better-auth-migration.sql
-```
-
-### 4. Configure environment variables
-
-Create your local environment file:
-
-```bash
-cp .env.example .env.local
-```
-
-Configure:
+Create `.env.local`:
 
 ```env
-DATABASE_URL=your_postgresql_connection_string
+DATABASE_URL=postgres://user:pass@host:5432/dbname
+BETTER_AUTH_SECRET=your-auth-secret
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-BETTER_AUTH_SECRET=your_secret_key
+# Email (optional — defaults to Resend test mode)
+RESEND_API_KEY=re_...
+EMAIL_FROM=onboarding@resend.dev
 
-BETTER_AUTH_URL=http://localhost:3000
-
-RESEND_API_KEY=your_resend_api_key
+# Push notifications (optional)
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:you@example.com
 ```
 
-Generate a secure Better Auth secret with:
+> **Email note:** Resend's free tier only allows delivery to your own address unless you verify a custom domain. The app detects this and falls back to a clear "test mode" response. Set `EMAIL_FROM` once you have a verified domain.
+
+### 3. Set up the database
+
+The schema lives in `supabase/schema.sql`. Apply it to your database:
 
 ```bash
-openssl rand -base64 32
+psql "$DATABASE_URL" -f supabase/schema.sql
 ```
 
-> `RESEND_API_KEY` is optional unless you want email-based password reset functionality.
+(Auth tables from better-auth are added by `supabase/better-auth-migration.sql`.)
 
-### 5. Start the development server
+The schema includes: `users`, `workspaces`, `tasks` (with `search_vector` for full-text search), `subtasks`, `tags`, `task_tags`, `task_comments`, `projects`, `habits`, `habit_logs`, `habit_categories`, `calendar_events`, `activity_logs`, `notifications`, `push_subscriptions`, and `user_settings`.
+
+### 4. Generate VAPID keys (optional)
 
 ```bash
-npm run dev
+npx web-push generate-vapid-keys
 ```
 
-Open:
+Put the public key in `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and the private key in `VAPID_PRIVATE_KEY`.
 
-```text
-http://localhost:3000
-```
-
----
-
-## 🧪 Testing
-
-Run the test suite:
+### 5. Run
 
 ```bash
-npm test
+npm run dev        # start dev server
+npm run build      # production build
+npm run start      # run production build
 ```
 
-Run linting:
+## Scripts
 
-```bash
-npm run lint
-```
+| Command               | Description                             |
+| --------------------- | --------------------------------------- |
+| `npm run dev`         | Start the dev server                    |
+| `npm run build`       | Production build                        |
+| `npm run start`       | Serve the production build              |
+| `npm run lint`        | ESLint check                            |
+| `npm test`            | Run the Vitest suite                    |
+| `npm run test:watch`  | Vitest watch mode                       |
+| `npm run accounts:list`  | List accounts for cleanup           |
+| `npm run accounts:delete` | Delete user accounts (cleanup)   |
 
-Build the application:
+## Architecture
 
-```bash
-npm run build
-```
+### API Routes
 
-Start the production server:
+All routes live under `src/app/api/` and use a shared helper layer (`src/lib/db.ts`) that centralizes auth (`requireUser`), connection pooling, JSON helpers, error responses, rate limiting, and ownership assertions.
 
-```bash
-npm start
-```
+- `/api/tasks` and `/api/tasks/[id]` — CRUD, search, tag/project filters, subtask counts, recurring rollover.
+- `/api/tasks/[id]/subtasks`, `/tags`, `/comments` — per-task child resources.
+- `/api/projects`, `/api/habits`, `/api/habit-logs`, `/api/habit-categories` — CRUD.
+- `/api/calendar-events` — calendar events CRUD.
+- `/api/activity` — activity feed (with entity/type filters).
+- `/api/notifications` — in-app notification center + send.
+- `/api/push-subscriptions` — PWA push subscription management.
+- `/api/dashboard` and `/api/analytics` — stats and chart data.
+- `/api/user-settings`, `/api/workspaces`, `/api/account` — profile & preferences.
+- `/api/auth/*` — better-auth endpoints.
 
-### Available Scripts
+### Recurring task logic
 
-| Command         | Description              |
-| --------------- | ------------------------ |
-| `npm run dev`   | Start development server |
-| `npm run build` | Create production build  |
-| `npm start`     | Start production server  |
-| `npm run lint`  | Run ESLint               |
-| `npm test`      | Run Vitest tests         |
+`src/lib/recurring.ts` contains the pure `nextOccurrence` function (also unit-tested in `tests/unit/recurring.test.ts`). When a recurring task is completed, `src/app/api/tasks/[id]/route.ts` rolls it over by inserting the next occurrence.
 
----
+### Activity feed
 
-## 🔒 Security
+`src/lib/activity.ts` exposes `logActivity`, called from every mutating route (tasks, projects, habits, habit logs, subtasks, tags, comments). It is fire-and-forget — a failure to log never fails the request. Client-facing metadata lives in the pure module `src/lib/activity-meta.ts` so it can be imported safely in client components.
 
-Productivity Hub is designed with security in mind.
+### Tests
 
-Security mechanisms include:
+Unit tests live in `tests/unit/` (pure logic: streaks, recurring). They import via relative paths (Vitest is not aliased to `@/`). Run with `npm test`.
 
-* Protected authenticated routes
-* Session-based API authorization
-* Cross-user data isolation
-* PostgreSQL Row Level Security
-* Zod request validation
-* Rate limiting
-* Secure authentication flows
-* Soft deletion
-* Database-level ownership policies
+## Deployment
 
-The database currently contains **16 tables** covering workspaces, projects, tasks, subtasks, tags, habits, habit logs, calendar events, notifications, activity logs, and user settings.
+The project deploys to Vercel. A CD GitHub Action (`.github/workflows/cd.yml`) runs the quality gate (`tsc --noEmit` → lint → tests → build) and then promotes to production on success.
 
----
+Production URL: <https://productivity-hub-green.vercel.app>
 
-## ☁️ Deployment
+### Vercel cron
 
-The recommended deployment setup is:
-
-```text
-GitHub
-   │
-   ▼
-Vercel
-   │
-   ▼
-Next.js Application
-   │
-   ▼
-Supabase PostgreSQL
-```
-
-### Deploy with Vercel
-
-1. Import the GitHub repository into Vercel.
-2. Configure the required environment variables.
-3. Set `BETTER_AUTH_URL` to your production domain.
-4. Deploy.
-
-The project also includes GitHub Actions workflows for CI/CD. CI can run type checking, linting, tests, and builds, while CD can deploy the application to Vercel.
-
----
-
-## 🗄️ Database
-
-The application uses **PostgreSQL through Supabase**.
-
-Major data areas include:
-
-```text
-Users
- │
- └── Workspaces
-      │
-      ├── Projects
-      │    └── Tasks
-      │         ├── Subtasks
-      │         └── Tags
-      │
-      ├── Habits
-      │    └── Habit Logs
-      │
-      ├── Calendar Events
-      │
-      ├── Notifications
-      │
-      ├── Activity Logs
-      │
-      └── User Settings
-```
-
-Row Level Security policies ensure users can only access data they are authorized to access.
-
----
-
-## 🧩 Core Modules
-
-```text
-Dashboard
-│
-├── Today
-├── Upcoming
-├── Inbox
-├── Tasks
-│   ├── List
-│   └── Kanban
-├── Projects
-├── Habits
-├── Calendar
-├── Analytics
-├── Notifications
-└── Settings
-```
-
----
-
-## 🎯 Goals
-
-Productivity Hub aims to provide a single place where users can:
-
-* 📋 Manage everything they need to do
-* 🎯 Organize larger projects
-* 🔥 Build consistent habits
-* 📅 Plan their schedule
-* 📊 Understand their productivity
-* 🔔 Stay on top of important tasks
-* 🔐 Keep personal data secure
-
----
-
-## 🛣️ Roadmap
-
-Potential future improvements:
-
-* [ ] Mobile/PWA experience
-* [ ] Advanced analytics dashboards
-* [ ] Team workspaces
-* [ ] Calendar integrations
-* [ ] Google Calendar integration
-* [ ] Task dependencies
-* [ ] AI-powered task planning
-* [ ] AI productivity insights
-* [ ] Advanced recurring-task rules
-* [ ] More notification channels
-* [ ] Offline-first support
-
----
-
-## 🤝 Contributing
-
-This project is currently maintained as a personal project.
-
-If the repository becomes open for contributions:
-
-1. Fork the repository
-2. Create a feature branch
-
-```bash
-git checkout -b feature/your-feature
-```
-
-3. Make your changes
-4. Run tests
-
-```bash
-npm test
-npm run lint
-npm run build
-```
-
-5. Commit your changes
-
-```bash
-git commit -m "feat: add your feature"
-```
-
-6. Push the branch
-
-```bash
-git push origin feature/your-feature
-```
-
-7. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is currently a **private project** and is not released under an open-source license.
-
----
-
-## 👨‍💻 Author
-
-**Magesh Saran**
-
-Computer Science & Engineering Student
-Interested in **Cybersecurity, Web Development, AI, and Software Engineering**.
-
-### Repository
-
-[Productivity Hub on GitHub](https://github.com/mageshsaran805-hue/productivity-hub?utm_source=chatgpt.com)
-
----
-
-<p align="center">
-  Built with ❤️ using Next.js, TypeScript, PostgreSQL & Supabase.
-</p>
+A `cron` schedule in `vercel.json` (once per day) triggers `/api/notifications/daily-push` to fire due reminders. Precise reminder timing while the app is open is handled by a client-side scheduler.

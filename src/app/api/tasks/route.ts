@@ -24,37 +24,40 @@ export async function GET(req: Request) {
 
     const params: unknown[] = [user.id];
     const conditions = ["user_id = $1", "deleted_at IS NULL"];
-    let sql = `SELECT * FROM tasks WHERE ${conditions.join(" AND ")}`;
+    let sql = `SELECT t.*,
+        (SELECT COUNT(*) FROM subtasks s WHERE s.task_id = t.id)::int AS subtask_count,
+        (SELECT COUNT(*) FROM subtasks s WHERE s.task_id = t.id AND s.completed)::int AS subtask_completed
+      FROM tasks t WHERE ${conditions.join(" AND ")}`;
 
     if (q.tag_id) {
       params.push(q.tag_id);
-      sql += ` AND id IN (SELECT task_id FROM task_tags WHERE tag_id = $${params.length})`;
+      sql += ` AND t.id IN (SELECT task_id FROM task_tags WHERE tag_id = $${params.length})`;
     }
     if (q.project_id) {
       params.push(q.project_id);
-      sql += ` AND project_id = $${params.length}`;
+      sql += ` AND t.project_id = $${params.length}`;
     }
     if (q.uncategorized === "true") {
-      sql += " AND project_id IS NULL";
+      sql += " AND t.project_id IS NULL";
     }
     if (q.search) {
       params.push(q.search);
-      sql += ` AND search_vector @@ websearch_to_tsquery('english', $${params.length})`;
+      sql += ` AND t.search_vector @@ websearch_to_tsquery('english', $${params.length})`;
     }
     if (q.due_start) {
       params.push(q.due_start);
-      sql += ` AND due_date >= $${params.length}`;
+      sql += ` AND t.due_date >= $${params.length}`;
     }
     if (q.due_end) {
       params.push(q.due_end);
-      sql += ` AND due_date <= $${params.length}`;
+      sql += ` AND t.due_date <= $${params.length}`;
     }
     if (q.due_next_24h === "true") {
       params.push(new Date(Date.now()).toISOString(), new Date(Date.now() + 24 * 3600 * 1000).toISOString());
-      sql += ` AND due_date IS NOT NULL AND due_date >= $${params.length - 1} AND due_date <= $${params.length}`;
+      sql += ` AND t.due_date IS NOT NULL AND t.due_date >= $${params.length - 1} AND t.due_date <= $${params.length}`;
     }
 
-    sql += ' ORDER BY "order" ASC, created_at DESC LIMIT ' + MAX_ROWS;
+    sql += ' ORDER BY t."order" ASC, t.created_at DESC LIMIT ' + MAX_ROWS;
     const { rows } = await pool.query(sql, params);
     return json(rows);
   } catch (err) {

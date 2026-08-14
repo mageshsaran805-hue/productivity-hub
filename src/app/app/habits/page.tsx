@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { useDefaultWorkspace } from "@/hooks/use-workspace";
-import { useHabits, useLogHabit, useDeleteHabit, useCreateHabit, useUpdateHabit } from "@/lib/queries";
+import { useHabits, useLogHabit, useDeleteHabit, useCreateHabit, useUpdateHabit, useHabitCategories } from "@/lib/queries";
 import { PageTransition } from "@/components/animations/page-transition";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { CardSkeleton } from "@/components/ui/skeleton";
 import { Plus, Target, CheckCircle2, Sparkles, Check, Trash2, Flame, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
-import type { HabitLog, Habit } from "@/types";
+import type { HabitLog, Habit, HabitCategory } from "@/types";
 import { cn } from "@/lib/utils";
 
 const PRESET_COLORS = [
@@ -55,8 +55,10 @@ export default function HabitsPage() {
   const [newName, setNewName] = useState("");
   const [newFrequency, setNewFrequency] = useState("daily");
   const [newColor, setNewColor] = useState("#6366f1");
+  const [newCategoryId, setNewCategoryId] = useState("");
   const [newReminderTime, setNewReminderTime] = useState("");
   const [newReminderDays, setNewReminderDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
+  const { data: categories } = useHabitCategories();
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
   const weekDates = useMemo(() => getWeekDates(), []);
@@ -123,6 +125,7 @@ export default function HabitsPage() {
       color: newColor,
       icon: "Target",
       frequency_times: 1,
+      category_id: newCategoryId || undefined,
       reminder_time: newReminderTime || undefined,
       reminder_days: newReminderTime ? newReminderDays : undefined,
     });
@@ -130,10 +133,11 @@ export default function HabitsPage() {
     setNewName("");
     setNewFrequency("daily");
     setNewColor("#6366f1");
+    setNewCategoryId("");
     setNewReminderTime("");
     setNewReminderDays([0, 1, 2, 3, 4, 5, 6]);
     toast.success("Habit created!");
-  }, [createHabit, user?.id, workspace?.id, newName, newFrequency, newColor, newReminderTime, newReminderDays]);
+  }, [createHabit, user?.id, workspace?.id, newName, newFrequency, newColor, newCategoryId, newReminderTime, newReminderDays]);
 
   const handleToggle = useCallback(
     (habitId: string, completed: boolean) => {
@@ -158,6 +162,7 @@ export default function HabitsPage() {
       name: newName.trim(),
       frequency: newFrequency as "daily" | "weekly" | "monthly",
       color: newColor,
+      category_id: newCategoryId || undefined,
       reminder_time: newReminderTime || undefined,
       reminder_days: newReminderTime ? newReminderDays : undefined,
     });
@@ -171,6 +176,7 @@ export default function HabitsPage() {
     setNewName(habit.name);
     setNewFrequency(habit.frequency);
     setNewColor(habit.color || "#6366f1");
+    setNewCategoryId(habit.category_id ?? "");
     setNewReminderTime(habit.reminder_time?.slice(0, 5) ?? "");
     setNewReminderDays(habit.reminder_days?.length ? habit.reminder_days : [0, 1, 2, 3, 4, 5, 6]);
   };
@@ -237,6 +243,9 @@ export default function HabitsPage() {
             onFrequencyChange={setNewFrequency}
             color={newColor}
             onColorChange={setNewColor}
+            categoryId={newCategoryId}
+            onCategoryChange={setNewCategoryId}
+            categories={categories ?? []}
             reminderTime={newReminderTime}
             onReminderTimeChange={setNewReminderTime}
             reminderDays={newReminderDays}
@@ -450,6 +459,9 @@ export default function HabitsPage() {
           onFrequencyChange={setNewFrequency}
           color={newColor}
           onColorChange={setNewColor}
+          categoryId={newCategoryId}
+          onCategoryChange={setNewCategoryId}
+          categories={categories ?? []}
           reminderTime={newReminderTime}
           onReminderTimeChange={setNewReminderTime}
           reminderDays={newReminderDays}
@@ -474,6 +486,9 @@ export default function HabitsPage() {
             onFrequencyChange={setNewFrequency}
             color={newColor}
             onColorChange={setNewColor}
+            categoryId={newCategoryId}
+            onCategoryChange={setNewCategoryId}
+            categories={categories ?? []}
             reminderTime={newReminderTime}
             onReminderTimeChange={setNewReminderTime}
             reminderDays={newReminderDays}
@@ -496,6 +511,9 @@ function HabitForm({
   onFrequencyChange,
   color,
   onColorChange,
+  categoryId,
+  onCategoryChange,
+  categories,
   reminderTime,
   onReminderTimeChange,
   reminderDays,
@@ -510,6 +528,9 @@ function HabitForm({
   onFrequencyChange: (v: string) => void;
   color: string;
   onColorChange: (v: string) => void;
+  categoryId: string;
+  onCategoryChange: (v: string) => void;
+  categories: HabitCategory[];
   reminderTime: string;
   onReminderTimeChange: (v: string) => void;
   reminderDays: number[];
@@ -554,6 +575,16 @@ function HabitForm({
         value={frequency}
         onChange={onFrequencyChange}
         placeholder="Frequency"
+      />
+      <Select
+        options={[
+          { value: "", label: "No category" },
+          ...categories.map((c) => ({ value: c.id, label: c.name })),
+        ]}
+        value={categoryId}
+        onChange={onCategoryChange}
+        placeholder="Select a category"
+        disabled={categories.length === 0}
       />
       <Input
         label="Reminder time (optional)"

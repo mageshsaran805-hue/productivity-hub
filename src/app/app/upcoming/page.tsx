@@ -6,7 +6,7 @@ import { PageTransition } from "@/components/animations/page-transition";
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useTasksDueInRange, useCompleteTask } from "@/lib/queries";
-import { CalendarClock, Loader2 } from "lucide-react";
+import { CalendarClock, Loader2, Repeat } from "lucide-react";
 import type { Task } from "@/types";
 import toast from "react-hot-toast";
 
@@ -45,6 +45,11 @@ function TaskRow({ task, onComplete }: { task: Task; onComplete: (id: string) =>
       <span className={`text-sm flex-1 ${task.status === "completed" ? "line-through text-muted-foreground" : "text-foreground/80"}`}>
         {task.title}
       </span>
+      {task.is_recurring && (
+        <span className="inline-flex items-center gap-1 text-[10px] text-secondary-500 shrink-0" title="Repeats">
+          <Repeat className="w-3 h-3" />
+        </span>
+      )}
       <PriorityBadge priority={task.priority} />
     </div>
   );

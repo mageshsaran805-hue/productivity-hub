@@ -54,6 +54,8 @@ export interface Task {
   created_at: string;
   updated_at: string;
   deleted_at?: string;
+  subtask_count?: number;
+  subtask_completed?: number;
 }
 
 export interface SubTask {
@@ -106,6 +108,7 @@ export interface HabitCategory {
   icon: string;
   user_id: string;
   created_at: string;
+  habit_count?: number;
 }
 
 export interface ActivityRow {

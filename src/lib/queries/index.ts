@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import type { Task, Project, Habit, HabitLog, CalendarEvent, UserSettings, AppNotification, SubTask, Tag, TaskComment, ActivityRow } from "@/types";
+import type { Task, Project, Habit, HabitLog, CalendarEvent, UserSettings, AppNotification, SubTask, Tag, TaskComment, ActivityRow, HabitCategory } from "@/types";
 
 // ─── API helper ───────────────────────────────────────────────────────────
 // All data access goes through server-side, session-authenticated routes.
@@ -355,6 +355,39 @@ export function useProjectsDueInRange(startDate: string, endDate: string) {
       get<Project[]>(
         `/api/projects?due_start=${encodeURIComponent(startDate)}&due_end=${encodeURIComponent(endDate)}`
       ),
+  });
+}
+
+// ─── HABIT CATEGORIES ────────────────────────────────────────────────────
+
+export function useHabitCategories() {
+  return useQuery({
+    queryKey: ["habit_categories"],
+    staleTime: 30_000,
+    queryFn: () => get<HabitCategory[]>("/api/habit-categories"),
+  });
+}
+
+export function useCreateHabitCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (category: Partial<HabitCategory>) =>
+      post<HabitCategory>("/api/habit-categories", category),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["habit_categories"] });
+    },
+  });
+}
+
+export function useDeleteHabitCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      del<{ success: boolean }>(`/api/habit-categories/${encodeURIComponent(id)}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["habit_categories"] });
+      queryClient.invalidateQueries({ queryKey: ["habits"] });
+    },
   });
 }
 

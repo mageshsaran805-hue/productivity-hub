@@ -7,11 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useAuth } from "@/hooks/use-auth";
-import { useUserSettings, useUpdateUserSettings, useTestNotification, useTags, useCreateTag, useUpdateTag, useDeleteTag } from "@/lib/queries";
+import { useUserSettings, useUpdateUserSettings, useTestNotification, useTags, useCreateTag, useUpdateTag, useDeleteTag, useHabitCategories, useCreateHabitCategory, useDeleteHabitCategory } from "@/lib/queries";
 import { NotificationPermissionStatus } from "@/components/ui/notification-permission-status";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { Bell, User, Palette, ChevronRight, Moon, Trash2, AlertTriangle, Send, Tag as TagIcon, Plus, Pencil, Check, X } from "lucide-react";
+import { Bell, User, Palette, ChevronRight, Moon, Trash2, AlertTriangle, Send, Tag as TagIcon, Plus, Pencil, Check, X, FolderOpen } from "lucide-react";
 import toast from "react-hot-toast";
 
 const TAG_COLORS = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#6366f1", "#8b5cf6", "#ec4899"];
@@ -167,6 +167,90 @@ function TagManager() {
   );
 }
 
+function HabitCategoryManager() {
+  const { data: categories } = useHabitCategories();
+  const createCategory = useCreateHabitCategory();
+  const deleteCategory = useDeleteHabitCategory();
+
+  const [newName, setNewName] = useState("");
+  const [newColor, setNewColor] = useState(TAG_COLORS[0]);
+
+  const handleCreate = () => {
+    if (!newName.trim()) return;
+    createCategory.mutate(
+      { name: newName.trim(), color: newColor },
+      {
+        onSuccess: () => {
+          setNewName("");
+          setNewColor(TAG_COLORS[0]);
+          toast.success("Category created");
+        },
+        onError: () => toast.error("Failed to create category"),
+      }
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Organize your habits into groups like Health, Learning, or Finance. Pick a category when creating or editing a habit.
+      </p>
+
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder="New category name"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+        />
+        <div className="flex items-center gap-1.5">
+          {TAG_COLORS.slice(0, 5).map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setNewColor(c)}
+              className="w-7 h-7 rounded-full transition-all"
+              style={{
+                backgroundColor: c,
+                outline: newColor === c ? `2px solid ${c}` : "none",
+                outlineOffset: 2,
+              }}
+            />
+          ))}
+        </div>
+        <Button onClick={handleCreate} icon={<Plus className="w-4 h-4" />} disabled={!newName.trim()}>
+          Add
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        {(categories ?? []).map((category) => (
+          <div key={category.id} className="flex items-center gap-3 p-3 rounded-2xl border border-border/50 bg-foreground/[0.02]">
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ backgroundColor: category.color }}
+            />
+            <span className="flex-1 text-sm font-medium">{category.name}</span>
+            <span className="text-xs text-muted-foreground">
+              {category.habit_count ?? 0} habit{(category.habit_count ?? 0) === 1 ? "" : "s"}
+            </span>
+            <button
+              onClick={() => deleteCategory.mutate(category.id)}
+              className="p-2 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors"
+              aria-label="Delete category"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+        {!categories?.length && (
+          <p className="text-xs text-muted-foreground">No categories yet — create your first one above.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { user } = useAuth();
   const { data: settings } = useUserSettings();
@@ -315,6 +399,13 @@ export default function SettingsPage() {
       label: "Tags",
       color: "text-yellow-500",
       render: () => <TagManager />,
+    },
+    {
+      id: "habit-categories",
+      icon: FolderOpen,
+      label: "Habit Categories",
+      color: "text-emerald-500",
+      render: () => <HabitCategoryManager />,
     },
     {
       id: "profile",
