@@ -1,4 +1,5 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, habitLogSchema, rateLimit } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -72,6 +73,9 @@ export async function POST(req: Request) {
        RETURNING *`,
       [input.habit_id, input.date, input.completed, input.value ?? null, input.note ?? null]
     );
+    if (input.completed) {
+      await logActivity(user.id, "habit.logged", "habit", input.habit_id, { date: input.date });
+    }
     return json(rows[0], 201);
   } catch (err) {
     return errorResponse(err);

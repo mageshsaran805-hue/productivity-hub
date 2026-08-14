@@ -55,8 +55,9 @@ export async function POST(req: Request) {
 
     // ponytail: plain text email, upgrade to SendGrid template if open rates matter
     const resend = await getResend();
+    const from = process.env.EMAIL_FROM ?? "Productivity Hub <onboarding@resend.dev>";
     const { error } = await resend.emails.send({
-      from: "Productivity Hub <onboarding@resend.dev>",
+      from,
       to: session.user.email,
       subject: `${tasks.length} task${tasks.length > 1 ? "s" : ""} due soon`,
       html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
@@ -67,7 +68,24 @@ export async function POST(req: Request) {
       </div>`,
     });
 
-    if (error) throw error;
+    if (error) {
+      // Test mode only delivers to the account owner's own email; anything else
+      // fails until a verified domain is added and EMAIL_FROM is configured.
+      const isTestMode =
+        !process.env.EMAIL_FROM ||
+        error.message?.toLowerCase().includes("domain_not_verified") ||
+        error.message?.toLowerCase().includes("onboarding@resend.dev");
+      return Response.json(
+        {
+          sent: false,
+          reason: isTestMode ? "email_test_mode" : "send_failed",
+          detail: isTestMode
+            ? "Email is in Resend test mode — it only reaches your own inbox. Add a verified domain (EMAIL_FROM) to deliver to other recipients."
+            : error.message,
+        },
+        { status: 200 }
+      );
+    }
 
     return Response.json({ sent: true, count: tasks.length });
   } catch (err) {

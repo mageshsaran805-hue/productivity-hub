@@ -108,6 +108,16 @@ export interface HabitCategory {
   created_at: string;
 }
 
+export interface ActivityRow {
+  id: string;
+  user_id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
 export interface Habit {
   id: string;
   user_id: string;

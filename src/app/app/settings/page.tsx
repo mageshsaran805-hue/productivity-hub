@@ -271,6 +271,9 @@ export default function SettingsPage() {
               />
             </div>
           ))}
+          <p className="text-xs text-foreground/40 -mt-1">
+            Email is on Resend&apos;s free test mode and only reaches your own inbox. It will reach other recipients once a custom domain is verified.
+          </p>
 
           <div className="pt-3 border-t border-border/50 space-y-3">
             <NotificationPermissionStatus />

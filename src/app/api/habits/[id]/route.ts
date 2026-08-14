@@ -1,4 +1,5 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, habitUpdateSchema, requireUuid } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -58,6 +59,7 @@ export async function PATCH(req: Request, { params }: Params) {
       `UPDATE habits SET ${sets.join(", ")} WHERE user_id = $${values.length - 1} AND id = $${values.length} RETURNING *`,
       values
     );
+    await logActivity(user.id, "habit.updated", "habit", id, { name: rows[0].name });
     return json(rows[0]);
   } catch (err) {
     return errorResponse(err);
@@ -69,10 +71,11 @@ export async function DELETE(_req: Request, { params }: Params) {
     const user = await requireUser();
     const id = requireUuid((await params).id);
     const result = await pool.query(
-      `UPDATE habits SET deleted_at = now() WHERE user_id = $1 AND id = $2 AND deleted_at IS NULL RETURNING id`,
+      `UPDATE habits SET deleted_at = now() WHERE user_id = $1 AND id = $2 AND deleted_at IS NULL RETURNING id, name`,
       [user.id, id]
     );
     if (result.rowCount === 0) throw new ApiError(404, "Habit not found");
+    await logActivity(user.id, "habit.deleted", "habit", id, { name: result.rows[0].name });
     return json({ success: true });
   } catch (err) {
     return errorResponse(err);

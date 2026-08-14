@@ -1,4 +1,5 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, tagUpdateSchema, requireUuid } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -31,6 +32,7 @@ export async function PATCH(req: Request, { params }: Params) {
       values
     );
     if (rows.length === 0) throw new ApiError(404, "Tag not found");
+    await logActivity(user.id, "tag.updated", "tag", id, { name: rows[0].name });
     return json(rows[0]);
   } catch (err) {
     return errorResponse(err);
@@ -42,10 +44,11 @@ export async function DELETE(_req: Request, { params }: Params) {
     const user = await requireUser();
     const id = requireUuid((await params).id);
     const result = await pool.query(
-      `DELETE FROM tags WHERE user_id = $1 AND id = $2 RETURNING id`,
+      `DELETE FROM tags WHERE user_id = $1 AND id = $2 RETURNING id, name`,
       [user.id, id]
     );
     if (result.rowCount === 0) throw new ApiError(404, "Tag not found");
+    await logActivity(user.id, "tag.deleted", "tag", id, { name: result.rows[0].name });
     return json({ success: true });
   } catch (err) {
     return errorResponse(err);

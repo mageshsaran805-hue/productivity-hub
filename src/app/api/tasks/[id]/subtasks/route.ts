@@ -1,4 +1,5 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, subtaskCreateSchema, rateLimit, requireUuid } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -45,6 +46,7 @@ export async function POST(req: Request, { params }: Params) {
        RETURNING *`,
       [id, input.title, input.completed ?? false, input.order ?? 0]
     );
+    await logActivity(user.id, "subtask.created", "subtask", rows[0].id, { task_id: id, title: input.title });
     return json(rows[0], 201);
   } catch (err) {
     return errorResponse(err);

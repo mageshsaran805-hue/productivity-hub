@@ -1,4 +1,5 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, taskCreateSchema, rateLimit, assertOwned } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -120,6 +121,9 @@ export async function POST(req: Request) {
        RETURNING *`,
       values
     );
+    await logActivity(user.id, "task.created", "task", rows[0].id, {
+      title: input.title,
+    });
     return json(rows[0], 201);
   } catch (err) {
     return errorResponse(err);

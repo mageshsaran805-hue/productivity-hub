@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
   Search, LayoutDashboard, Inbox, Sun, CalendarClock, CheckSquare,
-  FolderKanban, Calendar, Target, BarChart3, Bell, Settings,
+  FolderKanban, Calendar, Target, BarChart3, Bell, Settings, Activity,
   ArrowRight, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -48,6 +48,7 @@ export function CommandPalette({ open, onClose, onToggle, onNewTask }: CommandPa
     { id: "calendar", label: "Go to Calendar", icon: <Calendar className="w-4 h-4" />, href: "/app/calendar", category: "Navigation" },
     { id: "habits", label: "Go to Habits", icon: <Target className="w-4 h-4" />, href: "/app/habits", category: "Navigation" },
     { id: "analytics", label: "Go to Analytics", icon: <BarChart3 className="w-4 h-4" />, href: "/app/analytics", category: "Navigation" },
+    { id: "activity", label: "Go to Activity", icon: <Activity className="w-4 h-4" />, href: "/app/activity", category: "Navigation" },
     { id: "notifications", label: "Go to Notifications", icon: <Bell className="w-4 h-4" />, href: "/app/notifications", category: "Navigation" },
     { id: "settings", label: "Go to Settings", icon: <Settings className="w-4 h-4" />, href: "/app/settings", category: "Navigation" },
     { id: "new-task", label: "Create New Task", description: "Add a task to your list", icon: <Plus className="w-4 h-4" />, action: onNewTask, category: "Actions" },

@@ -1,4 +1,5 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, tagCreateSchema, rateLimit } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -35,6 +36,7 @@ export async function POST(req: Request) {
        RETURNING *`,
       [user.id, input.name, input.color ?? "#6366f1"]
     );
+    await logActivity(user.id, "tag.created", "tag", rows[0].id, { name: input.name });
     return json(rows[0], 201);
   } catch (err) {
     return errorResponse(err);

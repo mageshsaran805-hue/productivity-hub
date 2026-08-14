@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
-import type { Task, Project, Habit, HabitLog, CalendarEvent, UserSettings, AppNotification, SubTask, Tag, TaskComment } from "@/types";
+import type { Task, Project, Habit, HabitLog, CalendarEvent, UserSettings, AppNotification, SubTask, Tag, TaskComment, ActivityRow } from "@/types";
 
 // ─── API helper ───────────────────────────────────────────────────────────
 // All data access goes through server-side, session-authenticated routes.
@@ -278,6 +278,26 @@ export function useDeleteTaskComment() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["task_comments", variables.taskId] });
     },
+  });
+}
+
+// ─── ACTIVITY ────────────────────────────────────────────────────────────
+
+export function useActivity(limit = 50) {
+  return useQuery({
+    queryKey: ["activity", limit],
+    staleTime: 30_000,
+    queryFn: () => get<ActivityRow[]>(`/api/activity?limit=${limit}`),
+  });
+}
+
+export function useEntityActivity(entityType: string, entityId: string) {
+  return useQuery({
+    queryKey: ["activity", entityType, entityId],
+    enabled: !!entityId,
+    staleTime: 30_000,
+    queryFn: () =>
+      get<ActivityRow[]>(`/api/activity?entity_type=${encodeURIComponent(entityType)}&entity_id=${encodeURIComponent(entityId)}`),
   });
 }
 

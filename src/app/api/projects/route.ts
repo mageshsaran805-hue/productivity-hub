@@ -1,4 +1,5 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, projectCreateSchema, rateLimit, assertOwned } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -59,6 +60,7 @@ export async function POST(req: Request) {
         input.progress ?? 0,
       ]
     );
+    await logActivity(user.id, "project.created", "project", rows[0].id, { name: input.name });
     return json(rows[0], 201);
   } catch (err) {
     return errorResponse(err);

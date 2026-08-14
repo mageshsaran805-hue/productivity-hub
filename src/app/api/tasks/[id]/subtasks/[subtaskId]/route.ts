@@ -1,4 +1,5 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, subtaskUpdateSchema, requireUuid } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -34,6 +35,15 @@ export async function PATCH(req: Request, { params }: Params) {
       values
     );
     if (rows.length === 0) throw new ApiError(404, "Subtask not found");
+    if (input.completed !== undefined) {
+      await logActivity(
+        user.id,
+        input.completed ? "subtask.completed" : "task.reopened",
+        "subtask",
+        stId,
+        { task_id: taskId, title: rows[0].title }
+      );
+    }
     return json(rows[0]);
   } catch (err) {
     return errorResponse(err);
@@ -54,6 +64,7 @@ export async function DELETE(_req: Request, { params }: Params) {
       [stId, taskId, user.id]
     );
     if (result.rowCount === 0) throw new ApiError(404, "Subtask not found");
+    await logActivity(user.id, "subtask.deleted", "subtask", stId, { task_id: taskId });
     return json({ success: true });
   } catch (err) {
     return errorResponse(err);

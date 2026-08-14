@@ -1,4 +1,5 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, taskCommentCreateSchema, rateLimit, requireUuid } from "@/lib/db";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -48,6 +49,7 @@ export async function POST(req: Request, { params }: Params) {
        RETURNING *`,
       [id, user.id, input.content]
     );
+    await logActivity(user.id, "comment.created", "comment", rows[0].id, { task_id: id });
     return json(rows[0], 201);
   } catch (err) {
     return errorResponse(err);

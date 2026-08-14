@@ -1,5 +1,6 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, habitCreateSchema, rateLimit, assertOwned } from "@/lib/db";
 import { computeStreaks } from "@/lib/streaks";
+import { logActivity } from "@/lib/activity";
 
 export const runtime = "nodejs";
 
@@ -72,6 +73,7 @@ export async function POST(req: Request) {
         input.reminder_days ?? null,
       ]
     );
+    await logActivity(user.id, "habit.created", "habit", rows[0].id, { name: input.name });
     return json(rows[0], 201);
   } catch (err) {
     return errorResponse(err);
