@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import type { Task, Project, Habit, HabitLog, CalendarEvent, UserSettings } from "@/types";
 
 // ─── API helper ───────────────────────────────────────────────────────────
@@ -166,10 +167,11 @@ export function useProjectsDueInRange(startDate: string, endDate: string) {
 // ─── HABITS ──────────────────────────────────────────────────────────────
 
 export function useHabits() {
+  const today = useMemo(() => new Date().toISOString().split("T")[0], []);
   return useQuery({
-    queryKey: ["habits"],
+    queryKey: ["habits", today],
     staleTime: 30_000,
-    queryFn: () => get<Habit[]>("/api/habits"),
+    queryFn: () => get<Habit[]>(`/api/habits?today=${encodeURIComponent(today)}`),
   });
 }
 
@@ -262,6 +264,14 @@ export function useDueNotifications() {
     queryKey: ["tasks", "due_notifications"],
     staleTime: 30_000,
     queryFn: () => get<Task[]>("/api/tasks?due_next_24h=true"),
+  });
+}
+
+export function useUnreadNotifications() {
+  return useQuery({
+    queryKey: ["tasks", "unread_count"],
+    staleTime: 30_000,
+    queryFn: () => get<{ count: number }>("/api/notifications/unread-count"),
   });
 }
 

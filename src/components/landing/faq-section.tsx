@@ -7,8 +7,8 @@ import { ChevronDown } from "lucide-react";
 const faqs = [
   { q: "What makes this different from other productivity apps?", a: "We combine tasks, projects, habits, and calendar into one seamless experience with a focus on beautiful design, smooth animations, and intuitive interactions. It's like having Linear, Notion, and TickTick in one app." },
   { q: "Is my data secure?", a: "Absolutely. We use industry-standard encryption, secure authentication, and follow best practices for data protection." },
-  { q: "Can I import data from other apps?", a: "Yes, we support importing from popular tools like Todoist, TickTick, and Notion." },
-  { q: "Is there a mobile app?", a: "The web app is fully responsive and works great on mobile. Native mobile apps are coming soon." },
+  { q: "Can I import data from other apps?", a: "Not yet — but you can quickly add tasks and projects manually. Import from popular tools like Todoist, TickTick, and Notion is on the roadmap." },
+  { q: "Is there a mobile app?", a: "Yes! Productivity Hub is a Progressive Web App (PWA). Install it from your browser — on mobile it runs full-screen like a native app with offline support, and it works across all your devices from the same URL." },
 ];
 
 export function FAQSection() {

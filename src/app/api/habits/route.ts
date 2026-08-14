@@ -1,15 +1,40 @@
 import { requireUser, pool, json, errorResponse, ApiError, readJson, habitCreateSchema, rateLimit, assertOwned } from "@/lib/db";
+import { computeStreaks } from "@/lib/streaks";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const user = await requireUser();
-    const { rows } = await pool.query(
+    const url = new URL(req.url);
+    const todayParam = url.searchParams.get("today") ?? undefined;
+    const { rows: habits } = await pool.query(
       `SELECT * FROM habits WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at ASC LIMIT 500`,
       [user.id]
     );
-    return json(rows);
+
+    const habitIds = habits.map((h: { id: string }) => h.id);
+    const completedByHabit = new Map<string, Set<string>>();
+    if (habitIds.length > 0) {
+      const { rows } = await pool.query(
+        `SELECT habit_id, date FROM habit_logs
+         WHERE completed = true AND habit_id = ANY($1)
+         ORDER BY date ASC LIMIT 20000`,
+        [habitIds]
+      );
+      for (const row of rows) {
+        if (!completedByHabit.has(row.habit_id)) completedByHabit.set(row.habit_id, new Set());
+        completedByHabit.get(row.habit_id)!.add(typeof row.date === "string" ? row.date : new Date(row.date).toISOString().split("T")[0]);
+      }
+    }
+
+    const streaks = computeStreaks(completedByHabit, habitIds, todayParam);
+    const result = habits.map((h: { id: string }) => ({
+      ...h,
+      current_streak: streaks[h.id]?.current_streak ?? 0,
+      best_streak: streaks[h.id]?.best_streak ?? 0,
+    }));
+    return json(result);
   } catch (err) {
     return errorResponse(err);
   }

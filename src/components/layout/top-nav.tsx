@@ -8,6 +8,7 @@ import { Bell, Search, LogOut } from "lucide-react";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useAuth } from "@/hooks/use-auth";
 import { useCommandPaletteContext } from "@/hooks/use-command-palette";
+import { useUnreadNotifications } from "@/lib/queries";
 import { getInitials } from "@/lib/utils";
 
 const pageNames: Record<string, string> = {
@@ -34,7 +35,8 @@ export function TopNav() {
 
   const title = pageNames[pathname] || "Dashboard";
   const userInitials = user?.email ? getInitials(user.email) : "?";
-  const hasUnseen = false;
+  const { data: unread } = useUnreadNotifications();
+  const hasUnseen = (unread?.count ?? 0) > 0;
 
   const handleSignOut = async () => {
     await signOut();
@@ -80,7 +82,9 @@ export function TopNav() {
           >
             <Bell className="w-4 h-4" />
             {hasUnseen && (
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-danger-500" />
+              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-danger-500 text-white text-[10px] font-semibold flex items-center justify-center">
+                {(unread?.count ?? 0) > 9 ? "9+" : unread?.count}
+              </span>
             )}
           </Link>
 

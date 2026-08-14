@@ -117,6 +117,8 @@ export interface Habit {
   icon: string;
   reminder_time?: string;
   reminder_days?: number[];
+  current_streak?: number;
+  best_streak?: number;
   created_at: string;
   updated_at: string;
   deleted_at?: string;

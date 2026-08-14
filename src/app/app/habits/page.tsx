@@ -16,7 +16,7 @@ import { Select } from "@/components/ui/select";
 import { StaggerChildren, StaggerItem } from "@/components/animations/stagger-children";
 import { EmptyState } from "@/components/ui/empty-state";
 import { CardSkeleton } from "@/components/ui/skeleton";
-import { Plus, Target, CheckCircle2, Sparkles, Check, Trash2 } from "lucide-react";
+import { Plus, Target, CheckCircle2, Sparkles, Check, Trash2, Flame } from "lucide-react";
 import toast from "react-hot-toast";
 import type { HabitLog } from "@/types";
 import { cn } from "@/lib/utils";
@@ -105,6 +105,11 @@ export default function HabitsPage() {
   const habitsDoneToday = useMemo(
     () => Object.values(todayStatus).filter(Boolean).length,
     [todayStatus],
+  );
+
+  const bestStreak = useMemo(
+    () => Math.max(0, ...(habits ?? []).map((h) => h.best_streak ?? 0)),
+    [habits],
   );
 
   const createHabitAction = useCallback(async () => {
@@ -235,7 +240,7 @@ export default function HabitsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card glass className="p-4 text-center">
             <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500 p-2">
               <Target className="h-5 w-5 text-white" />
@@ -262,6 +267,13 @@ export default function HabitsPage() {
                 : Math.round((habitsDoneToday / habits.length) * 100) + "%"}
             </p>
             <p className="text-xs text-foreground/50">Today Rate</p>
+          </Card>
+          <Card glass className="p-4 text-center">
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-danger-500 p-2">
+              <Flame className="h-5 w-5 text-white" />
+            </div>
+            <p className="text-lg font-bold">{bestStreak}</p>
+            <p className="text-xs text-foreground/50">Best Streak</p>
           </Card>
         </div>
 
@@ -361,6 +373,15 @@ export default function HabitsPage() {
                         {weekDone}/{7}
                       </span>
                       <span className="text-muted-foreground">this week</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Flame className="h-4 w-4 text-orange-500" />
+                      <span className="font-medium">
+                        {habit.current_streak ?? 0}
+                      </span>
+                      <span className="text-muted-foreground">
+                        day{habit.current_streak === 1 ? "" : "s"}
+                      </span>
                     </div>
                   </div>
 
