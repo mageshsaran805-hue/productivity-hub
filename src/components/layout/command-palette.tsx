@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   Search, LayoutDashboard, Inbox, Sun, CalendarClock, CheckSquare,
   FolderKanban, Calendar, Target, BarChart3, Bell, Settings, Activity,
-  ArrowRight, Plus,
+  ArrowRight, Plus, BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +50,7 @@ export function CommandPalette({ open, onClose, onToggle, onNewTask }: CommandPa
     { id: "analytics", label: "Go to Analytics", icon: <BarChart3 className="w-4 h-4" />, href: "/app/analytics", category: "Navigation" },
     { id: "activity", label: "Go to Activity", icon: <Activity className="w-4 h-4" />, href: "/app/activity", category: "Navigation" },
     { id: "notifications", label: "Go to Notifications", icon: <Bell className="w-4 h-4" />, href: "/app/notifications", category: "Navigation" },
+    { id: "about", label: "About / User Guide", description: "What you can do in the app", icon: <BookOpen className="w-4 h-4" />, href: "/app/about", category: "Navigation" },
     { id: "settings", label: "Go to Settings", icon: <Settings className="w-4 h-4" />, href: "/app/settings", category: "Navigation" },
     { id: "new-task", label: "Create New Task", description: "Add a task to your list", icon: <Plus className="w-4 h-4" />, action: onNewTask, category: "Actions" },
     { id: "new-project", label: "Create New Project", description: "Start a new project", icon: <Plus className="w-4 h-4" />, action: onNewTask, category: "Actions" },

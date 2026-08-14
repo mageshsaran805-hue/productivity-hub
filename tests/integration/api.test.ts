@@ -239,6 +239,41 @@ describe.runIf(serverUp)("API integration (session-gated)", () => {
     });
   });
 
+  describe("recurring task rollover", () => {
+    it("creates the next occurrence when a recurring task is completed", async () => {
+      const created = await api("/api/tasks", {
+        method: "POST",
+        body: {
+          workspace_id: workspaceA,
+          title: "Recurring smoke task",
+          is_recurring: true,
+          recurring_rule: "daily",
+          due_date: new Date().toISOString(),
+        },
+        cookie: userA.cookie,
+      });
+      expect(created.status).toBe(201);
+
+      const completed = await api(`/api/tasks/${created.data.id}`, {
+        method: "PATCH",
+        body: { status: "completed", completed_at: new Date().toISOString() },
+        cookie: userA.cookie,
+      });
+      expect(completed.status).toBe(200);
+      expect(completed.data.status).toBe("completed");
+
+      const list = await api("/api/tasks", { cookie: userA.cookie });
+      expect(list.status).toBe(200);
+      const tasks = (list.data as unknown as { id: string; title: string; status: string; due_date: string }[]);
+      const recurring = tasks.filter((t) => t.title === "Recurring smoke task");
+      expect(recurring.length).toBe(2);
+      const next = recurring.find((t) => t.status !== "completed");
+      const completedDue = completed.data.due_date as string;
+      expect(next).toBeTruthy();
+      expect(new Date(next!.due_date).getTime()).toBeGreaterThan(new Date(completedDue).getTime());
+    });
+  });
+
   describe("habits + logs", () => {
     let habitId: string;
     it("creates a habit (201)", async () => {

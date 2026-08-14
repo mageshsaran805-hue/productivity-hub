@@ -9,7 +9,7 @@ import { useCommandPaletteContext } from "@/hooks/use-command-palette";
 import {
   LayoutDashboard, Inbox, Sun, CalendarClock, CheckSquare, FolderKanban,
   Calendar, Target, BarChart3, Bell, Settings, ChevronLeft, ChevronRight,
-  Sparkles, Search, Plus, X, Activity
+  Sparkles, Search, Plus, X, Activity, BookOpen
 } from "lucide-react";
 
 const navItems = [
@@ -29,6 +29,7 @@ const navItems = [
   { section: "Account", items: [
     { id: "activity", label: "Activity", icon: Activity, href: "/app/activity" },
     { id: "notifications", label: "Notifications", icon: Bell, href: "/app/notifications" },
+    { id: "about", label: "About", icon: BookOpen, href: "/app/about" },
     { id: "settings", label: "Settings", icon: Settings, href: "/app/settings" },
   ]},
 ];

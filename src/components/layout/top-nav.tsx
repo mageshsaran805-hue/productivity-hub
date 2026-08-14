@@ -23,6 +23,7 @@ const pageNames: Record<string, string> = {
   "/app/analytics": "Analytics",
   "/app/activity": "Activity",
   "/app/notifications": "Notifications",
+  "/app/about": "About",
   "/app/settings": "Settings",
 };
 
