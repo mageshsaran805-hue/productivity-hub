@@ -30,6 +30,7 @@ export function MobileNav() {
               <Link
                 key={item.id}
                 href={item.href}
+                prefetch={false}
                 className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors active:scale-95"
                 aria-label={item.label}
               >

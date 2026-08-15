@@ -45,7 +45,7 @@ function SidebarContent({ onNavigate, collapsed }: { onNavigate?: () => void; co
     <>
       {/* Logo */}
       <div className={cn("flex items-center h-16 px-4 border-b border-border/50", isCollapsed && "justify-center")}>
-        <Link href="/app" onClick={onNavigate} className="flex items-center gap-2">
+        <Link href="/app" prefetch={false} onClick={onNavigate} className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
@@ -114,7 +114,7 @@ function SidebarContent({ onNavigate, collapsed }: { onNavigate?: () => void; co
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
                 return (
-                  <Link key={item.id} href={item.href} onClick={onNavigate}>
+                  <Link key={item.id} href={item.href} prefetch={false} onClick={onNavigate}>
                     <motion.div
                       whileHover={{ x: 3 }}
                       whileTap={{ scale: 0.98 }}

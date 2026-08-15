@@ -526,10 +526,11 @@ export function useTasksDueInRange(startDate: string, endDate: string) {
   });
 }
 
-export function useDueNotifications() {
+export function useDueNotifications(enabled = true) {
   return useQuery({
     queryKey: ["tasks", "due_notifications"],
     staleTime: 30_000,
+    enabled,
     queryFn: () => get<Task[]>("/api/tasks?due_next_24h=true"),
   });
 }

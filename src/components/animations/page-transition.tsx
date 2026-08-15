@@ -10,22 +10,22 @@ interface PageTransitionProps {
 }
 
 /**
- * Smooth entrance for page content. Uses a soft cubic-bezier for the
- * entrance and a slightly faster exit so returning feels responsive.
+ * Smooth entrance for page content. Uses a short, soft ease so navigation
+ * feels responsive (snappier than a long fade-up) while still having polish.
  */
 const pageVariants: Variants = {
-  initial: { opacity: 0, y: 14, scale: 0.995 },
+  initial: { opacity: 0, y: 10, scale: 0.997 },
   animate: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.5, ease: easeSoft },
+    transition: { duration: 0.28, ease: easeSoft },
   },
   exit: {
     opacity: 0,
-    y: -10,
-    scale: 0.995,
-    transition: { duration: 0.25, ease: "easeIn" as const },
+    y: -8,
+    scale: 0.997,
+    transition: { duration: 0.15, ease: "easeIn" as const },
   },
 };
 

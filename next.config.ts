@@ -3,7 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
   experimental: {
-    optimizePackageImports: ["framer-motion", "@tanstack/react-query"],
+    optimizePackageImports: ["framer-motion", "@tanstack/react-query", "lucide-react"],
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
   },
   async headers() {
     return [

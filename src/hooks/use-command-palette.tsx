@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
 interface CommandPaletteContextValue {
   paletteOpen: boolean;
@@ -23,6 +23,22 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   const togglePalette = useCallback(() => setPaletteOpen((prev) => !prev), []);
   const openNewTask = useCallback(() => setNewTaskOpen(true), []);
   const closeNewTask = useCallback(() => setNewTaskOpen(false), []);
+
+  // Global Cmd/Ctrl+K shortcut — lives here (not in the palette) so it works
+  // even before the palette's lazy-loaded code has been downloaded.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((prev) => !prev);
+      }
+      if (e.key === "Escape") {
+        setPaletteOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <CommandPaletteContext.Provider

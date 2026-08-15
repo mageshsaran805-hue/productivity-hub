@@ -25,7 +25,7 @@ function urlBase64ToUint8Array(base64String: string) {
 export function useBrowserNotifications() {
   const { user } = useAuth();
   const { data: settings } = useUserSettings();
-  const { data: dueTasks } = useDueNotifications();
+  const { data: dueTasks } = useDueNotifications(settings?.notifications_email === true);
 
   // Register service worker and subscribe for push notifications
   useEffect(() => {

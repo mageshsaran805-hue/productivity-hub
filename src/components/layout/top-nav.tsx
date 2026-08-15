@@ -89,6 +89,7 @@ export function TopNav() {
 
           <Link
             href="/app/notifications"
+            prefetch={false}
             className="relative p-2 rounded-xl hover:bg-foreground/5 transition-all text-foreground/60 hover:text-foreground active:scale-95"
             aria-label="Notifications"
           >

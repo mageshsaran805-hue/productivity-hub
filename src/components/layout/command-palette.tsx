@@ -23,11 +23,10 @@ interface CommandItem {
 interface CommandPaletteProps {
   open?: boolean;
   onClose?: () => void;
-  onToggle?: () => void;
   onNewTask?: () => void;
 }
 
-export function CommandPalette({ open, onClose, onToggle, onNewTask }: CommandPaletteProps) {
+export function CommandPalette({ open, onClose, onNewTask }: CommandPaletteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -38,10 +37,6 @@ export function CommandPalette({ open, onClose, onToggle, onNewTask }: CommandPa
   const close = useCallback(
     () => (onClose ? onClose() : setIsOpen(false)),
     [onClose],
-  );
-  const toggle = useCallback(
-    () => (onToggle ? onToggle() : setIsOpen((prev) => !prev)),
-    [onToggle],
   );
 
   const items: CommandItem[] = [
@@ -80,20 +75,6 @@ export function CommandPalette({ open, onClose, onToggle, onNewTask }: CommandPa
   }, {});
 
   const flatItems = filtered;
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        toggle();
-      }
-      if (e.key === "Escape") {
-        close();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [toggle, close]);
 
   // Reset search state when the palette opens (adjust state during render).
   const [wasOpen, setWasOpen] = useState(show);
@@ -229,10 +210,4 @@ placeholder="Search or jump to..."
       )}
     </AnimatePresence>
   );
-}
-
-export function useCommandPalette() {
-  const [show, setShow] = useState(false);
-  const toggle = useCallback(() => setShow((prev) => !prev), []);
-  return { show, toggle };
 }
