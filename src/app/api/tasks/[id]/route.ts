@@ -100,6 +100,15 @@ export async function PATCH(req: Request, { params }: Params) {
         sets.push(`"${key}" = $${values.length}`);
       }
     }
+    // completed_at is server-managed: stamp it on completion, clear it on
+    // reopen, so dashboard/today can count "completed today" correctly.
+    if (input.status === "completed" && current.status !== "completed") {
+      values.push(new Date().toISOString());
+      sets.push(`"completed_at" = $${values.length}`);
+    } else if (input.status && input.status !== "completed" && current.status === "completed") {
+      values.push(null);
+      sets.push(`"completed_at" = $${values.length}`);
+    }
     if (sets.length === 0) throw new ApiError(400, "No fields to update");
 
     values.push(user.id, id);

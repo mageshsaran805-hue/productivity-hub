@@ -12,7 +12,7 @@ export async function GET() {
             AND completed_at >= CURRENT_DATE)::int AS tasks_today,
          (SELECT count(*) FROM tasks WHERE user_id = $1 AND deleted_at IS NULL)::int AS total_tasks,
          (SELECT count(*) FROM habit_logs l JOIN habits h ON h.id = l.habit_id
-            WHERE h.user_id = $1 AND l.completed = true AND l.date = CURRENT_DATE)::int AS habits_done,
+            WHERE h.user_id = $1 AND h.deleted_at IS NULL AND l.completed = true AND l.date = CURRENT_DATE)::int AS habits_done,
          (SELECT count(*) FROM habits WHERE user_id = $1 AND deleted_at IS NULL)::int AS total_habits`,
       [user.id]
     );

@@ -93,7 +93,10 @@ export default function DashboardPage() {
   const [newTitle, setNewTitle] = useState("");
 
   const incomplete = (tasks ?? []).filter((t) => !t.completed_at);
-  const pct = stats?.totalTasks ? Math.round((stats.tasksToday / stats.totalTasks) * 100) : 0;
+  // Productivity = tasks + habits completed today out of the total scheduled.
+  const doneToday = (stats?.tasksToday ?? 0) + (stats?.habitsDone ?? 0);
+  const plannedToday = (stats?.totalTasks ?? 0) + (stats?.totalHabits ?? 0);
+  const pct = plannedToday > 0 ? Math.round((doneToday / plannedToday) * 100) : 0;
 
   const handleQuickAdd = async (e: FormEvent) => {
     e.preventDefault();

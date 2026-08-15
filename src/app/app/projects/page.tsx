@@ -10,9 +10,10 @@ import { Modal } from "@/components/ui/modal";
 import { StaggerChildren, StaggerItem } from "@/components/animations/stagger-children";
 import { useAuth } from "@/hooks/use-auth";
 import { useDefaultWorkspace } from "@/hooks/use-workspace";
-import { useProjects, useCreateProject, useDeleteProject } from "@/lib/queries";
+import { useProjects, useCreateProject, useDeleteProject, useUpdateProject } from "@/lib/queries";
 import { ProjectEditModal } from "@/components/projects/project-edit-modal";
-import { FolderKanban, Plus, Search, Trash2, Pencil } from "lucide-react";
+import { ProjectProgressModal } from "@/components/projects/project-progress-modal";
+import { FolderKanban, Plus, Search, Trash2, Pencil, Check, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Project } from "@/types";
 
@@ -24,9 +25,11 @@ export default function ProjectsPage() {
   const { data: projects, isLoading } = useProjects();
   const createProject = useCreateProject();
   const deleteProject = useDeleteProject();
+  const updateProject = useUpdateProject();
 
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [progressProject, setProgressProject] = useState<Project | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -48,6 +51,19 @@ export default function ProjectsPage() {
   const handleDelete = (id: string) => {
     deleteProject.mutate(id);
     toast.success("Project deleted");
+  };
+
+  const handleToggleComplete = async (project: Project) => {
+    const next = project.status === "completed" ? "active" : "completed";
+    try {
+      await updateProject.mutateAsync({
+        id: project.id,
+        status: next,
+      });
+      toast.success(next === "completed" ? "Project completed!" : "Project reopened");
+    } catch {
+      toast.error("Failed to update project");
+    }
   };
 
   const handleCreate = async () => {
@@ -126,7 +142,7 @@ export default function ProjectsPage() {
           <StaggerChildren className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((project) => (
               <StaggerItem key={project.id}>
-                <Card glass tilt hover glow className="p-5">
+                <Card glass tilt hover glow className="p-5" onClick={() => setProgressProject(project)}>
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div
@@ -148,23 +164,57 @@ export default function ProjectsPage() {
                         )}
                       </div>
                     </div>
-                    <button
-                      onClick={() => setEditingProject(project)}
-                      className="shrink-0 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-foreground/5 text-foreground/30 hover:text-foreground transition-all"
-                      aria-label="Edit project"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(project.id)}
-                      className="shrink-0 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-foreground/30 hover:text-red-400 transition-all"
-                      aria-label="Delete project"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleComplete(project);
+                        }}
+                        className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all ${
+                          project.status === "completed"
+                            ? "bg-success-500 text-white shadow-lg shadow-success-500/25"
+                            : "bg-foreground/5 text-muted-foreground hover:bg-foreground/10"
+                        }`}
+                        aria-label={
+                          project.status === "completed" ? "Mark incomplete" : "Mark complete"
+                        }
+                        title={
+                          project.status === "completed" ? "Mark incomplete" : "Mark complete"
+                        }
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingProject(project);
+                        }}
+                        className="shrink-0 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-foreground/5 text-foreground/30 hover:text-foreground transition-all"
+                        aria-label="Edit project"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(project.id);
+                        }}
+                        className="shrink-0 p-1.5 rounded-xl opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-foreground/30 hover:text-red-400 transition-all"
+                        aria-label="Delete project"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between text-xs text-foreground/50 mb-2">
-                    <span className="text-muted-foreground">{project.progress}% complete</span>
+                    {project.status === "completed" ? (
+                      <span className="inline-flex items-center gap-1 text-success-500 font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Completed
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">{project.progress}% complete</span>
+                    )}
                   </div>
                   <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
                     <motion.div
@@ -235,6 +285,7 @@ export default function ProjectsPage() {
         </Modal>
 
         <ProjectEditModal project={editingProject} onClose={() => setEditingProject(null)} />
+        <ProjectProgressModal project={progressProject} onClose={() => setProgressProject(null)} />
       </div>
     </PageTransition>
   );

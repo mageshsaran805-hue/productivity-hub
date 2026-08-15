@@ -35,8 +35,9 @@ export async function GET(req: Request) {
       await assertOwnsHabit(user.id, hid);
     }
 
-    const params: unknown[] = [habitIds];
-    let sql = `SELECT l.* FROM habit_logs l JOIN habits h ON h.id = l.habit_id
+    const params: unknown[] = [user.id, habitIds];
+    let sql = `SELECT l.id, l.habit_id, l.date::text AS date, l.completed, l.value, l.note, l.created_at
+               FROM habit_logs l JOIN habits h ON h.id = l.habit_id
                WHERE h.user_id = $1 AND l.habit_id = ANY($2)`;
     if (q.start) {
       params.push(q.start);
@@ -70,7 +71,7 @@ export async function POST(req: Request) {
       `INSERT INTO habit_logs (habit_id, date, completed, value, note)
        VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (habit_id, date) DO UPDATE SET completed = EXCLUDED.completed, value = EXCLUDED.value, note = EXCLUDED.note
-       RETURNING *`,
+       RETURNING id, habit_id, date::text AS date, completed, value, note, created_at`,
       [input.habit_id, input.date, input.completed, input.value ?? null, input.note ?? null]
     );
     if (input.completed) {

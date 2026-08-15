@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { useUpdateProject } from "@/lib/queries";
 import type { Project } from "@/types";
 import { Save } from "lucide-react";
@@ -83,17 +84,11 @@ export function ProjectEditModal({ project, onClose }: ProjectEditModalProps) {
             />
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-foreground/70 mb-2">Status</label>
-              <select
+              <Select
                 value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full h-11 px-4 bg-white/50 dark:bg-white/5 backdrop-blur-xl border border-border/50 rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary-500/30"
-              >
-                {STATUS_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+                onChange={setStatus}
+                options={STATUS_OPTIONS}
+              />
             </div>
           </div>
           <div>
