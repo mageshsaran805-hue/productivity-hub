@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface AnimatedBackgroundProps {
@@ -10,6 +10,7 @@ interface AnimatedBackgroundProps {
 }
 
 export function AnimatedBackground({ variant = "default", className }: AnimatedBackgroundProps) {
+  const reduceMotion = useReducedMotion();
   const blobs = useMemo(() => {
     const colors = [
       { from: "#6366f1", to: "#8b5cf6" },
@@ -42,6 +43,8 @@ export function AnimatedBackground({ variant = "default", className }: AnimatedB
     }));
   }, [variant]);
 
+  const reducedMotion = reduceMotion === true;
+
   return (
     <div className={cn("fixed inset-0 overflow-hidden pointer-events-none z-0", className)}>
       {/* Gradient base */}
@@ -58,14 +61,18 @@ export function AnimatedBackground({ variant = "default", className }: AnimatedB
             height: blob.size,
             willChange: "transform",
           }}
-          animate={{
-            x: [blob.x, blob.x + blob.driftX, blob.x],
-            y: [blob.y, blob.y + blob.driftY, blob.y],
-            scale: [1, 1.1, 1, 0.95, 1],
-          }}
+          animate={
+            reducedMotion
+              ? { x: blob.x, y: blob.y, opacity: 0.15 }
+              : {
+                  x: [blob.x, blob.x + blob.driftX, blob.x],
+                  y: [blob.y, blob.y + blob.driftY, blob.y],
+                  scale: [1, 1.1, 1, 0.95, 1],
+                }
+          }
           transition={{
             duration: blob.duration,
-            repeat: Infinity,
+            repeat: reducedMotion ? 0 : Infinity,
             delay: blob.delay,
             ease: "easeInOut",
           }}

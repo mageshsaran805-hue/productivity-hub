@@ -116,22 +116,24 @@ function SidebarContent({ onNavigate, collapsed }: { onNavigate?: () => void; co
                 return (
                   <Link key={item.id} href={item.href} onClick={onNavigate}>
                     <motion.div
-                      whileHover={{ x: 2 }}
+                      whileHover={{ x: 3 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
                       className={cn(
-                        "flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all duration-200",
+                        "flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors duration-200",
                         isCollapsed && "justify-center px-2",
                         isActive
-                          ? "bg-gradient-to-r from-primary-500/10 to-secondary-500/10 text-primary-500 font-medium"
+                          ? "bg-gradient-to-r from-primary-500/15 to-secondary-500/10 text-primary-500 font-medium shadow-sm shadow-primary-500/5"
                           : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                       )}
                     >
                       <div className="relative">
-                        <Icon className="w-4 h-4 shrink-0" />
+                        <Icon className={cn("w-4 h-4 shrink-0 transition-transform duration-200", isActive && "scale-110")} />
                         {isActive && (
                           <motion.div
                             layoutId="activeIndicator"
-                            className="absolute -left-3 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary-500 rounded-full"
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="absolute -left-3 top-1/2 -translate-y-1/2 w-1 h-5 bg-gradient-to-b from-primary-500 to-secondary-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.6)]"
+                            transition={{ type: "spring", stiffness: 350, damping: 30 }}
                           />
                         )}
                       </div>
@@ -180,8 +182,8 @@ export function Sidebar() {
   return (
     <motion.aside
       animate={{ width: isCollapsed ? 72 : 260 }}
-      transition={{ type: "spring", stiffness: 200, damping: 25 }}
-      className="hidden md:flex relative h-dvh flex-col bg-white/60 dark:bg-gray-950/60 backdrop-blur-2xl border-r border-white/20 dark:border-white/10 z-30"
+      transition={{ type: "spring", stiffness: 220, damping: 28 }}
+      className="hidden md:flex relative h-dvh flex-col glass-elevated border-r border-white/20 dark:border-white/10 z-30"
     >
       <SidebarContent />
 
@@ -216,8 +218,8 @@ export function MobileSidebar() {
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed inset-y-0 left-0 z-50 flex flex-col w-[280px] max-w-[85vw] bg-white/90 dark:bg-gray-950/90 backdrop-blur-2xl border-r border-white/20 dark:border-white/10 shadow-2xl md:hidden"
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+            className="fixed inset-y-0 left-0 z-50 flex flex-col w-[280px] max-w-[85vw] glass-elevated border-r border-white/20 dark:border-white/10 shadow-2xl md:hidden"
           >
             <button
               onClick={close}

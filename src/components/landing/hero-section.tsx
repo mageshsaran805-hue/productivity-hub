@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Sparkles, CheckCircle2, Target, Calendar, GitFork, ArrowRight } from "lucide-react";
+import { Sparkles, CheckCircle2, Target, Calendar, GitFork, ArrowRight, Flame } from "lucide-react";
 import Link from "next/link";
 
 export function HeroSection() {
@@ -48,7 +48,10 @@ export function HeroSection() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-foreground/50">5-day streak 🔥</p>
+          <p className="text-xs text-foreground/50 flex items-center gap-1.5">
+            <Flame className="w-3.5 h-3.5 text-warning-500" />
+            5-day streak
+          </p>
         </div>
       </motion.div>
 
@@ -95,7 +98,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6"
+            className="font-display text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6"
           >
             <span className="bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
               Organize Your
@@ -203,10 +206,14 @@ export function HeroSection() {
                   </div>
                   <div className="p-3 rounded-xl bg-foreground/5">
                     <p className="text-xs text-foreground/50 mb-2">Habit Streaks</p>
-                    {["Morning Run • 12 days", "Read • 7 days", "Meditate • 5 days"].map((t, i) => (
+                    {[
+                      { name: "Morning Run", days: "12 days", color: "bg-primary-500" },
+                      { name: "Read", days: "7 days", color: "bg-success-500" },
+                      { name: "Meditate", days: "5 days", color: "bg-secondary-500" },
+                    ].map((t, i) => (
                       <div key={i} className="flex items-center gap-2 py-1.5">
-                        <span className="text-xs">{["🏃", "📚", "🧘"][i]}</span>
-                        <span className="text-xs text-foreground/70">{t}</span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${t.color}`} />
+                        <span className="text-xs text-foreground/70">{t.name} • {t.days}</span>
                       </div>
                     ))}
                   </div>

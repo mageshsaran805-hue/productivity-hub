@@ -46,15 +46,25 @@ export function TopNav() {
   };
 
   return (
-    <header className="sticky top-0 z-20 h-16 bg-white/40 dark:bg-gray-950/40 backdrop-blur-2xl border-b border-white/20 dark:border-white/10">
+    <header className="sticky top-0 z-20 h-16 glass-elevated border-b border-white/20 dark:border-white/10">
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
         <div className="flex items-center gap-3">
-          <button onClick={toggle} className="md:hidden p-2 rounded-xl hover:bg-foreground/5 transition-colors" aria-label="Open menu">
+          <button
+            onClick={toggle}
+            className="md:hidden p-2 rounded-xl hover:bg-foreground/5 transition-colors active:scale-95"
+            aria-label="Open menu"
+          >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-foreground">
               <path d="M2.5 5H17.5M2.5 10H17.5M2.5 15H17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
-          <motion.h1 key={title} initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-lg font-semibold">
+          <motion.h1
+            key={title}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 30 }}
+            className="text-lg font-semibold font-display"
+          >
             {title}
           </motion.h1>
         </div>
@@ -62,7 +72,7 @@ export function TopNav() {
         <div className="flex items-center gap-2">
           <button
             onClick={openPalette}
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-foreground/5 border border-border/50 text-muted-foreground text-xs"
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-foreground/5 border border-border/50 text-muted-foreground text-xs transition-all hover:bg-foreground/10 hover:text-foreground active:scale-95"
           >
             <Search className="w-3.5 h-3.5" />
             <span>Quick search...</span>
@@ -71,7 +81,7 @@ export function TopNav() {
 
           <button
             onClick={openPalette}
-            className="md:hidden p-2 rounded-xl hover:bg-foreground/5 transition-colors text-foreground/60 hover:text-foreground"
+            className="md:hidden p-2 rounded-xl hover:bg-foreground/5 transition-colors text-foreground/60 hover:text-foreground active:scale-95"
             aria-label="Search"
           >
             <Search className="w-4 h-4" />
@@ -79,14 +89,19 @@ export function TopNav() {
 
           <Link
             href="/app/notifications"
-            className="relative p-2 rounded-xl hover:bg-foreground/5 transition-colors text-foreground/60 hover:text-foreground"
+            className="relative p-2 rounded-xl hover:bg-foreground/5 transition-all text-foreground/60 hover:text-foreground active:scale-95"
             aria-label="Notifications"
           >
             <Bell className="w-4 h-4" />
             {hasUnseen && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-danger-500 text-white text-[10px] font-semibold flex items-center justify-center">
+              <motion.span
+                initial={{ scale: 0.5 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-danger-500 text-white text-[10px] font-semibold flex items-center justify-center shadow-sm shadow-danger-500/40"
+              >
                 {(unread?.count ?? 0) > 9 ? "9+" : unread?.count}
-              </span>
+              </motion.span>
             )}
           </Link>
 

@@ -19,11 +19,19 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-display: var(--font-plus-jakarta), 'Plus Jakarta Sans', var(--font-inter), system-ui, sans-serif;
 }
+
+/* ---------- Base ---------- */
 
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -32,18 +40,33 @@ body {
   font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Glassmorphism base */
+/* Display / heading font utility */
+.font-display {
+  font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', var(--font-inter), system-ui, sans-serif;
+}
+
+/* ---------- Glassmorphism base ---------- */
 .glass {
   background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Scrollbar styles */
+/* Elevated glass used for nav bars / panels */
+.glass-elevated {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ---------- Scrollbar ---------- */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -62,13 +85,13 @@ body {
   background: var(--muted-foreground);
 }
 
-/* Selection */
+/* ---------- Selection ---------- */
 ::selection {
   background: rgba(99, 102, 241, 0.25);
   transition: background-color 0.2s ease;
 }
 
-/* Focus ring */
+/* ---------- Focus ring ---------- */
 :focus-visible {
   outline: 2px solid rgba(99, 102, 241, 0.5);
   outline-offset: 2px;
@@ -76,7 +99,7 @@ body {
   transition: outline-color 0.2s ease, outline-offset 0.2s ease;
 }
 
-/* Animations */
+/* ---------- Animations ---------- */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -87,6 +110,72 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes aurora-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .animate-in {
   animation: fadeIn 0.3s ease-out, slideUp 0.3s ease-out;
+}
+
+/* Skeleton shimmer sweep (subtle, single-unit) */
+.shimmer-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Gradient text helper */
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Card glare highlight for spotlight hover */
+.card-spotlight {
+  position: relative;
+}
+.card-spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(
+    600px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    rgba(255, 255, 255, 0.08),
+    transparent 40%
+  );
+}
+.card-spotlight:hover::before {
+  opacity: 1;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

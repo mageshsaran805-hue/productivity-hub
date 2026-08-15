@@ -3,6 +3,7 @@
 import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { springDefault } from "@/lib/motion";
 
 interface CardProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface CardProps {
   tilt?: boolean;
   hover?: boolean;
   glow?: boolean;
+  spotlight?: boolean;
   onClick?: () => void;
 }
 
@@ -21,18 +23,24 @@ export function Card({
   tilt = false,
   hover = true,
   glow = false,
+  spotlight = true,
   onClick,
 }: CardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [spot, setSpot] = useState({ x: 50, y: 50 });
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!tilt || !cardRef.current) return;
+    if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * 100;
+    const py = ((e.clientY - rect.top) / rect.height) * 100;
+    setSpot({ x: px, y: py });
+    if (!tilt) return;
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setRotate({ x: -y * 10, y: x * 10 });
+    setRotate({ x: -y * 6, y: x * 6 });
   };
 
   const handleMouseLeave = () => {
@@ -47,29 +55,53 @@ export function Card({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
       animate={{
-        rotateX: rotate.x,
-        rotateY: rotate.y,
-        scale: isHovered && hover ? 1.02 : 1,
+        rotateX: tilt ? rotate.x : 0,
+        rotateY: tilt ? rotate.y : 0,
+        scale: isHovered && hover ? 1.015 : 1,
       }}
-      transition={{
-        type: "spring",
-        stiffness: 300,
-        damping: 30,
-        mass: 0.5,
-      }}
+      transition={springDefault}
       onClick={onClick}
       className={cn(
         "group relative rounded-3xl p-6 transition-shadow duration-300",
         glass &&
-          "bg-white/70 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-lg shadow-black/5",
+          "bg-white/70 dark:bg-white/[0.04] backdrop-blur-xl border border-white/20 dark:border-white/[0.08] shadow-lg shadow-black/[0.03] dark:shadow-black/30",
         !glass && "bg-card border border-border",
         hover && "cursor-pointer",
-        glow && isHovered && "shadow-xl shadow-primary-500/10",
+        glow && isHovered && "shadow-xl shadow-primary-500/10 dark:shadow-primary-500/15",
         className,
       )}
-      style={{ transformStyle: "preserve-3d" }}
+      style={
+        {
+          transformStyle: "preserve-3d",
+          "--spot-x": `${spot.x}%`,
+          "--spot-y": `${spot.y}%`,
+        } as React.CSSProperties
+      }
     >
-      {children}
+      {/* Spotlight glare */}
+      {spotlight && (
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-0 rounded-3xl transition-opacity duration-300",
+            isHovered ? "opacity-100" : "opacity-0",
+          )}
+          style={{
+            background: `radial-gradient(420px circle at ${spot.x}% ${spot.y}%, rgba(255,255,255,0.10), transparent 45%)`,
+          }}
+        />
+      )}
+
+      {/* Hover top highlight */}
+      <div
+        className="pointer-events-none absolute inset-x-6 top-0 h-px opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)",
+        }}
+      />
+
+      {/* Content */}
+      <div className="relative z-10">{children}</div>
     </motion.div>
   );
 }

@@ -3,6 +3,7 @@
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { springFast } from "@/lib/motion";
 import { Loader2 } from "lucide-react";
 
 interface ButtonProps {
@@ -79,22 +80,34 @@ export function Button({
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
       animate={magnetic ? { x: mousePos.x, y: mousePos.y } : {}}
-      transition={{
-        type: "spring" as const,
-        stiffness: 150,
-        damping: 15,
-        mass: 0.1,
-      }}
+      whileTap={magnetic ? { scale: 0.97 } : {}}
+      transition={springFast}
       className={cn(
         "relative inline-flex items-center justify-center font-medium transition-all duration-200",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        "disabled:pointer-events-none disabled:opacity-50 overflow-hidden",
+        "disabled:pointer-events-none disabled:opacity-50 overflow-hidden select-none",
         variantStyles[variant],
         sizeStyles[size],
         className,
       )}
       disabled={disabled || loading}
     >
+      {/* Sheen sweep on hover (primary/secondary/danger gradients) */}
+      {(variant === "primary" || variant === "danger") && (
+        <motion.span
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
+          aria-hidden
+        >
+          <motion.span
+            className="absolute top-0 left-[-75%] h-full w-[50%] bg-gradient-to-r from-transparent via-white/25 to-transparent"
+            initial={{ x: 0, opacity: 0 }}
+            whileHover={{ x: "400%", opacity: 1 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          />
+        </motion.span>
+      )}
+
+      {/* Ripple on hover */}
       {isHovered && (
         <motion.span
           className="absolute inset-0 bg-white/10 rounded-[inherit]"

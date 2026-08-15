@@ -172,7 +172,7 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">{greeting()}!</h2>
+              <h2 className="text-2xl font-bold font-display">{greeting()}!</h2>
               <p className="text-foreground/50">Here&apos;s your productivity overview</p>
             </div>
             <Button
@@ -249,7 +249,7 @@ export default function DashboardPage() {
                         <ProgressRing progress={progress} size={44} strokeWidth={3} showPercentage={false} />
                       )}
                     </div>
-                    <p className="text-2xl font-bold mb-0.5">
+                    <p className="text-2xl font-bold font-display mb-0.5">
                       <CountUp end={stat.value} />
                       {stat.total > 0 && stat.total !== 100 && (
                         <span className="text-lg text-foreground/40">/{stat.total}</span>
@@ -301,6 +301,7 @@ export default function DashboardPage() {
                         <motion.div
                           key={task.id}
                           whileHover={{ x: 4 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
                           className="flex items-center gap-3 p-3 rounded-xl hover:bg-foreground/5 transition-colors group"
                         >
                           <button
