@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface ParticleFieldProps {
@@ -11,8 +11,16 @@ interface ParticleFieldProps {
 export function ParticleField({ count = 30, className }: ParticleFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const particles = useMemo(() => {
-    return Array.from({ length: count }, () => ({
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Particles are created inside the effect so their mutations stay local
+    // to the animation loop (never mutating values from render scope).
+    const particles = Array.from({ length: count }, () => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
       size: 1 + Math.random() * 2,
@@ -20,14 +28,6 @@ export function ParticleField({ count = 30, className }: ParticleFieldProps) {
       speedY: (Math.random() - 0.5) * 0.3,
       opacity: 0.1 + Math.random() * 0.3,
     }));
-  }, [count]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
 
     let animationId: number;
     const resize = () => {
@@ -88,7 +88,7 @@ export function ParticleField({ count = 30, className }: ParticleFieldProps) {
       cancelAnimationFrame(animationId);
       window.removeEventListener("resize", resize);
     };
-  }, [particles]);
+  }, [count]);
 
   return (
     <canvas

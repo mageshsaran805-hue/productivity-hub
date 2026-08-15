@@ -645,6 +645,7 @@ export function useDashboardStats() {
         tasksToday: number;
         totalTasks: number;
         habitsDone: number;
+        habitsPlanned: number;
         totalHabits: number;
         today: string;
       }>("/api/dashboard"),

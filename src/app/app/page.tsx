@@ -93,9 +93,11 @@ export default function DashboardPage() {
   const [newTitle, setNewTitle] = useState("");
 
   const incomplete = (tasks ?? []).filter((t) => !t.completed_at);
-  // Productivity = tasks + habits completed today out of the total scheduled.
+  // Productivity = tasks + habits completed today out of what's due today
+  // (habitsPlanned only counts habits scheduled for today, so creating a
+  //  habit outside its schedule doesn't drag the score down).
   const doneToday = (stats?.tasksToday ?? 0) + (stats?.habitsDone ?? 0);
-  const plannedToday = (stats?.totalTasks ?? 0) + (stats?.totalHabits ?? 0);
+  const plannedToday = (stats?.totalTasks ?? 0) + (stats?.habitsPlanned ?? 0);
   const pct = plannedToday > 0 ? Math.round((doneToday / plannedToday) * 100) : 0;
 
   const handleQuickAdd = async (e: FormEvent) => {
@@ -145,7 +147,7 @@ export default function DashboardPage() {
     {
       label: "Habits Done",
       value: stats?.habitsDone ?? 0,
-      total: stats?.totalHabits ?? 0,
+      total: stats?.habitsPlanned ?? 0,
       icon: Target,
       color: "from-success-500 to-emerald-500",
     },
@@ -362,7 +364,7 @@ export default function DashboardPage() {
                   <div className="flex flex-col items-center py-6 text-center">
                     <CountUp end={stats?.habitsDone ?? 0} className="text-3xl font-bold" />
                     <p className="text-xs text-foreground/40 mt-1">
-                      of {stats?.totalHabits ?? 0} habits done today
+                      of {stats?.habitsPlanned ?? 0} habits done today
                     </p>
                   </div>
                 )}

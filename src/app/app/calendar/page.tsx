@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/animations/page-transition";
-import { GlassPanel } from "@/components/ui/glass-panel";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { Modal } from "@/components/ui/modal";
@@ -138,7 +138,7 @@ function useViewEvents(start: Date, end: Date) {
         list.push({
           day: new Date(project.due_date).getDate(),
           date: new Date(project.due_date),
-          title: `📁 ${project.name}`,
+          title: project.name,
           time: "All day",
           color: project.color || "#6366f1",
           due_date: project.due_date,
@@ -244,7 +244,7 @@ export default function CalendarPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold flex items-center gap-2.5">
+            <h2 className="font-display text-2xl font-bold flex items-center gap-2.5">
               <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 via-secondary-500 to-accent-500 shadow-lg shadow-primary-500/20">
                 <CalendarDays className="h-5 w-5 text-white" />
               </span>
@@ -270,7 +270,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Navigation + stats */}
-        <GlassPanel className="p-4 sm:p-5">
+        <Card className="p-4 sm:p-5" hover={false}>
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1 p-1 bg-foreground/5 rounded-2xl">
@@ -326,7 +326,7 @@ export default function CalendarPage() {
               />
             </div>
           </div>
-        </GlassPanel>
+        </Card>
 
         {/* Views */}
         <AnimatePresence mode="wait">
@@ -401,7 +401,7 @@ function MonthView({
     today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
 
   return (
-    <GlassPanel className="p-4 sm:p-6" intensity="light">
+    <Card className="p-4 sm:p-6" hover={false}>
       <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
         {DAYS.map((day) => (
           <div key={day} className="text-center text-xs text-foreground/40 font-semibold uppercase tracking-wider py-2">
@@ -461,7 +461,7 @@ function MonthView({
           );
         })}
       </div>
-    </GlassPanel>
+    </Card>
   );
 }
 
@@ -471,7 +471,7 @@ function WeekView({ events, weekStart, onEventClick }: { events: CalendarEvent[]
   const today = new Date();
 
   return (
-    <GlassPanel className="p-4" intensity="light">
+    <Card className="p-4" hover={false}>
       <div className="grid grid-cols-2 sm:grid-cols-7 gap-2 sm:gap-3">
         {Array.from({ length: 7 }).map((_, i) => {
           const date = addDays(weekStart, i);
@@ -515,7 +515,7 @@ function WeekView({ events, weekStart, onEventClick }: { events: CalendarEvent[]
           );
         })}
       </div>
-    </GlassPanel>
+    </Card>
   );
 }
 
@@ -530,7 +530,7 @@ function DayView({ events, date, onEventClick }: { events: CalendarEvent[]; date
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
   return (
-    <GlassPanel className="p-4 sm:p-6" intensity="light">
+    <Card className="p-4 sm:p-6" hover={false}>
       <div className={cn("text-center mb-5", isTodayDay && "text-primary-500")}>
         <div className="text-sm text-foreground/40 uppercase tracking-wider font-medium">
           {DAYS[date.getDay()]}
@@ -595,7 +595,7 @@ function DayView({ events, date, onEventClick }: { events: CalendarEvent[]; date
           );
         })}
       </div>
-    </GlassPanel>
+    </Card>
   );
 }
 

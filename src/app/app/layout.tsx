@@ -12,8 +12,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-media-query";
 import { useAuth } from "@/hooks/use-auth";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { easeSoft } from "@/lib/motion";
 import { useBrowserNotifications } from "@/hooks/use-notifications";
 import { useNotificationScheduler } from "@/hooks/use-notification-scheduler";
 import { useServiceWorker } from "@/hooks/use-service-worker";
@@ -23,6 +25,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const { paletteOpen, newTaskOpen, closePalette, togglePalette, openNewTask, closeNewTask } = useCommandPaletteContext();
 
   // must be called before early returns — Rules of Hooks
@@ -54,7 +57,19 @@ function AppContent({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <TopNav />
         <main className="flex-1 overflow-y-auto">
-          <div className="p-4 lg:p-6 pb-20 md:pb-6 max-w-7xl mx-auto">{children}</div>
+          <div className="p-4 lg:p-6 pb-20 md:pb-6 max-w-7xl mx-auto">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15, ease: easeSoft }}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </main>
       </div>
       {isMobile && <MobileNav />}

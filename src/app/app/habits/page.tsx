@@ -116,7 +116,7 @@ export default function HabitsPage() {
     [habits],
   );
 
-  const createHabitAction = useCallback(async () => {
+  const createHabitAction = async () => {
     if (!user?.id || !workspace?.id) throw new Error("Not authenticated");
     await createHabit.mutateAsync({
       name: newName.trim(),
@@ -137,7 +137,7 @@ export default function HabitsPage() {
     setNewReminderTime("");
     setNewReminderDays([0, 1, 2, 3, 4, 5, 6]);
     toast.success("Habit created!");
-  }, [createHabit, user?.id, workspace?.id, newName, newFrequency, newColor, newCategoryId, newReminderTime, newReminderDays]);
+  };
 
   const handleToggle = useCallback(
     (habitId: string, completed: boolean) => {

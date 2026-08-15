@@ -8,7 +8,9 @@
  *   npm run dev   (in one terminal)
  *   npm test      (in another)
  *
- * The suite creates two disposable users and deletes their data afterwards.
+ * The suite creates two disposable users (provisioned directly in the DB —
+ * the app only supports Google OAuth, so there is no public sign-up API) and
+ * deletes their data afterwards.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
@@ -16,6 +18,7 @@ import { fileURLToPath } from "url";
 import path from "path";
 import { readFileSync, existsSync } from "fs";
 import { Pool } from "pg";
+import { createTestUser, deleteTestUser, TestUser } from "./auth-helper";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const base = process.env.API_BASE_URL ?? "http://localhost:3000";
@@ -29,21 +32,6 @@ async function isServerUp(): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-async function signup(prefix: string): Promise<{ cookie: string; email: string }> {
-  const email = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}@test.local`;
-  const res = await fetch(`${base}/api/auth/sign-up/email`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Origin: base },
-    body: JSON.stringify({ email, password: "password123", name: prefix }),
-  });
-  if (res.status !== 200) throw new Error(`signup failed: ${res.status}`);
-  const cookie = res.headers
-    .getSetCookie()
-    .map((c) => c.split(";")[0])
-    .join("; ");
-  return { cookie, email };
 }
 
 interface ApiResult {
@@ -87,6 +75,16 @@ function loadDbUrl(): string {
   throw new Error("DATABASE_URL not found (set env or .env.local)");
 }
 
+function loadAuthSecret(): string {
+  if (process.env.BETTER_AUTH_SECRET) return process.env.BETTER_AUTH_SECRET;
+  const envPath = path.join(root, ".env.local");
+  if (existsSync(envPath)) {
+    const m = readFileSync(envPath, "utf8").match(/^BETTER_AUTH_SECRET=(.+)$/m);
+    if (m) return m[1].trim();
+  }
+  throw new Error("BETTER_AUTH_SECRET not found (set env or .env.local)");
+}
+
 // ── state ─────────────────────────────────────────────────────────────────
 
 const serverUp = await isServerUp();
@@ -94,8 +92,8 @@ if (!serverUp) {
   console.warn(`[api.integration] No server at ${base} — SKIPPING. Start it with \`npm run dev\`.`);
 }
 
-let userA: { cookie: string; email: string };
-let userB: { cookie: string; email: string };
+let userA: TestUser;
+let userB: TestUser;
 let workspaceA: string;
 let taskId: string;
 let pool: Pool | null = null;
@@ -103,28 +101,17 @@ let pool: Pool | null = null;
 describe.runIf(serverUp)("API integration (session-gated)", () => {
   beforeAll(async () => {
     pool = new Pool({ connectionString: loadDbUrl(), max: 2 });
-    userA = await signup("ita");
-    userB = await signup("itb");
+    const secret = loadAuthSecret();
+    userA = await createTestUser(pool, secret, "ita");
+    userB = await createTestUser(pool, secret, "itb");
   });
 
   afterAll(async () => {
     // Delete disposable users + their data.
     if (pool) {
       try {
-        for (const email of [userA?.email, userB?.email]) {
-          if (!email) continue;
-          const { rows } = await pool.query(`SELECT id FROM public.user WHERE email = $1`, [email]);
-          for (const row of rows) {
-            const uid = row.id as string;
-            await pool.query(`DELETE FROM user_settings WHERE user_id = $1`, [uid]);
-            await pool.query(`DELETE FROM habit_logs WHERE habit_id IN (SELECT id FROM habits WHERE user_id = $1)`, [uid]);
-            await pool.query(`DELETE FROM habits WHERE user_id = $1`, [uid]);
-            await pool.query(`DELETE FROM tasks WHERE user_id = $1`, [uid]);
-            await pool.query(`DELETE FROM projects WHERE user_id = $1`, [uid]);
-            await pool.query(`DELETE FROM workspaces WHERE user_id = $1`, [uid]);
-            await pool.query(`DELETE FROM public.user WHERE id = $1`, [uid]);
-          }
-        }
+        if (userA) await deleteTestUser(pool, userA.id);
+        if (userB) await deleteTestUser(pool, userB.id);
       } catch (e) {
         console.warn("[api.integration] cleanup failed:", e);
       } finally {

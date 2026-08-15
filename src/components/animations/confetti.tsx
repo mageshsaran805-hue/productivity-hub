@@ -21,23 +21,31 @@ function createParticle(id: number) {
     duration: 1.5 + Math.random() * 2,
     delay: Math.random() * 0.3,
     shape: Math.random() > 0.5 ? "circle" : "square" as const,
+    spin: Math.random() > 0.5 ? 1 : -1,
   };
 }
 
 export function Confetti({ trigger, onComplete }: ConfettiProps) {
   const [particles, setParticles] = useState<ReturnType<typeof createParticle>[]>([]);
 
+  // Adjust state during render (guarded by trigger) so the burst starts
+  // immediately when the prop flips, without a setState-in-effect warning.
+  const [lastTrigger, setLastTrigger] = useState(trigger);
+  if (trigger !== lastTrigger) {
+    setLastTrigger(trigger);
+    if (trigger) {
+      setParticles(Array.from({ length: 40 }, (_, i) => createParticle(i)));
+    }
+  }
+
+  // Clear the particles after they finish falling.
   useEffect(() => {
     if (trigger) {
-      const newParticles = Array.from({ length: 40 }, (_, i) => createParticle(i));
-      setParticles(newParticles);
       const timer = setTimeout(() => {
         setParticles([]);
         onComplete?.();
       }, 4000);
       return () => clearTimeout(timer);
-    } else {
-      setParticles([]);
     }
   }, [trigger, onComplete]);
 
@@ -56,7 +64,7 @@ export function Confetti({ trigger, onComplete }: ConfettiProps) {
             }}
             animate={{
               y: "110vh",
-              rotate: p.rotation + 360 * (Math.random() > 0.5 ? 1 : -1),
+              rotate: p.rotation + 360 * p.spin,
               opacity: 0,
               scale: 0.5,
             }}

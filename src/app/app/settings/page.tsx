@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { PageTransition } from "@/components/animations/page-transition";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -264,7 +264,11 @@ export default function SettingsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  useEffect(() => {
+  // Sync server data into local state by adjusting state during render
+  // (React's recommended replacement for "setState in effect").
+  const [prevSettings, setPrevSettings] = useState(settings);
+  if (settings !== prevSettings) {
+    setPrevSettings(settings);
     if (settings) {
       setNotifState({
         email: settings.notifications_email,
@@ -272,11 +276,12 @@ export default function SettingsPage() {
         reminders: settings.notifications_reminders,
       });
     }
-  }, [settings]);
-
-  useEffect(() => {
+  }
+  const [prevUserName, setPrevUserName] = useState(user?.name);
+  if (user?.name !== prevUserName) {
+    setPrevUserName(user?.name);
     if (user?.name) setName(user.name);
-  }, [user?.name]);
+  }
 
   const handleToggle = (key: "email" | "push" | "reminders", checked: boolean) => {
     const next = { ...notifState, [key]: checked };

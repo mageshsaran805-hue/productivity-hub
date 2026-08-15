@@ -35,8 +35,14 @@ export function CommandPalette({ open, onClose, onToggle, onNewTask }: CommandPa
   const router = useRouter();
 
   const show = open !== undefined ? open : isOpen;
-  const close = onClose || (() => setIsOpen(false));
-  const toggle = onToggle || (() => setIsOpen((prev) => !prev));
+  const close = useCallback(
+    () => (onClose ? onClose() : setIsOpen(false)),
+    [onClose],
+  );
+  const toggle = useCallback(
+    () => (onToggle ? onToggle() : setIsOpen((prev) => !prev)),
+    [onToggle],
+  );
 
   const items: CommandItem[] = [
     { id: "dashboard", label: "Go to Dashboard", icon: <LayoutDashboard className="w-4 h-4" />, href: "/app", category: "Navigation" },
@@ -89,16 +95,23 @@ export function CommandPalette({ open, onClose, onToggle, onNewTask }: CommandPa
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [toggle, close]);
 
+  // Reset search state when the palette opens (adjust state during render).
+  const [wasOpen, setWasOpen] = useState(show);
+  if (show !== wasOpen) {
+    setWasOpen(show);
+    if (show) {
+      setQuery("");
+      setActiveIndex(0);
+    }
+  }
+
   useEffect(() => {
     if (show) {
       setTimeout(() => inputRef.current?.focus(), 50);
-      setActiveIndex(0);
-      setQuery("");
     }
   }, [show]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();
         setActiveIndex((prev) => Math.min(prev + 1, flatItems.length - 1));
@@ -115,9 +128,7 @@ export function CommandPalette({ open, onClose, onToggle, onNewTask }: CommandPa
         item.action?.();
         close();
       }
-    },
-    [flatItems, activeIndex, router, close],
-  );
+    };
 
   return (
     <AnimatePresence>
