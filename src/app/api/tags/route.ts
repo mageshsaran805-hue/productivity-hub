@@ -7,9 +7,10 @@ export async function GET() {
   try {
     const user = await requireUser();
     const { rows } = await pool.query(
-      `SELECT t.*, COUNT(tt.task_id)::int AS task_count
+      `SELECT t.*, COUNT(CASE WHEN tk.id IS NOT NULL THEN 1 END)::int AS task_count
        FROM tags t
        LEFT JOIN task_tags tt ON tt.tag_id = t.id
+       LEFT JOIN tasks tk ON tk.id = tt.task_id AND tk.deleted_at IS NULL
        WHERE t.user_id = $1
        GROUP BY t.id
        ORDER BY t.name ASC`,
